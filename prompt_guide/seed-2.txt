@@ -1,0 +1,45 @@
+General
+
+- Put the file part(s) first in content, then the instruction text.
+- Ask for a structured output format (JSON) when you need to parse.
+- Name the fields explicitly in the prompt; the model will honor them.
+- Pair caching.enabled + store=true when reusing the same file across
+    many prompts -- cuts latency and token cost.
+
+Image understanding
+  Prompt pattern:
+    "Describe the scene. Return JSON with fields:
+       objects (array of {label, bbox?}), setting, mood."
+  Tips:
+    - For OCR: "Transcribe all visible text verbatim, preserving line breaks."
+    - For comparison: send multiple input_image parts and number them
+      ("Image 1", "Image 2") in the prompt.
+
+Document (PDF) understanding
+  Prompt pattern (from official example):
+    "Provide the document's text content by paragraph and output it in
+     JSON format, including the paragraph type (type) and text content
+     (content)."
+  Tips:
+    - Use Files API for anything > a few pages; PDFs are rendered page-
+      by-page as images, so large files benefit from reuse + caching.
+    - Ask for page anchors: "Include a `page` integer on each item."
+    - For extraction: "Return a JSON array of {section, heading, bullets[]}."
+    - For QA over a PDF: one input_file part + one input_text question.
+
+Video understanding
+  Prompt pattern (action / danger analysis):
+    "Describe the movement sequence of the characters in the video, and
+     output start_time, end_time, event, danger in JSON format. Use
+     HH:mm:ss for timestamps."
+  Temporal QA pattern:
+    "At what timestamp does the referee appear?"  (model replies with
+     seconds, grounded by the [t second] frame markers).
+  Tips:
+    - Choose fps before uploading via Files API (preprocess_configs) so
+      the same file_id can be reused efficiently.
+    - High fps (3-5) for counting, sports, rapid scene cuts.
+    - Low fps (0.2-0.5) for long static footage / headcount.
+    - Always state the output timestamp format you want (seconds vs
+      HH:mm:ss) or you'll get inconsistent styles.
+    - Audio will be ignored -- don't ask about spoken content.

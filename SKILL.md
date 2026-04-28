@@ -50,6 +50,20 @@ Assume auth is already configured. If a command fails with an auth error, run `v
 - **Generate images**: `seedream-5` (default), `seedream-4-5`, `nano-banana-2`, `nano-banana-pro`, `gpt-image-2` — under `vhscli generate`
 - **Generate video**: `seedance-2` — under `vhscli generate`
 
+## Prompt guides
+
+Before you invoke `vhscli generate` (or do non-trivial understanding with `vhscli chat`), **Read the matching prompt guide first** and shape the prompt around it. The guides are concise, model-specific references distilled from each provider's docs — formulas, what to lead with, what works, what fails. Wording that's great for one model often underperforms on another, so don't skip this.
+
+| Model(s) | Guide file (Read before prompting) |
+| --- | --- |
+| `seed-2.0` (used by `vhscli chat`) | `prompt_guide/seed-2.txt` |
+| `seedream-5`, `seedream-4-5` | `prompt_guide/seedream.txt` |
+| `nano-banana-2`, `nano-banana-pro` | `prompt_guide/nano-banana.txt` |
+| `seedance-2` | `prompt_guide/seedance-2.txt` |
+| `gpt-image-2` | `prompt_guide/gpt-image-2.txt` |
+
+Trigger: any time the user asks for output from one of these models, Read its guide before building the prompt. For trivial chat (plain text Q&A with no media) you can skip `seed-2.txt`.
+
 ## Stdin prompts
 
 Every command that takes a prompt also accepts `-` as the prompt, meaning "read from stdin":

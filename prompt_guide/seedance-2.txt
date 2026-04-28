@@ -1,0 +1,438 @@
+================================================================================
+01  GENERAL PRINCIPLES
+================================================================================
+
+1.1  Basic Formula for Text Instructions
+-----------------------------------------
+Seedance 2.0 excels at following natural language logic. Combine these elements based on your
+creative needs:
+
+  LAYER 1 — Subject + Action (required)
+    The logical foundation. Clearly define "who" is performing "what action".
+    Example: "A woman in a red dress walks through a rainy street."
+
+  LAYER 2 — Scene / Environment (optional)
+    Define the overall tone by describing spatial background, lighting details, or visual styles.
+    Example: "...neon-lit alley, wet cobblestones reflecting colored lights, moody atmosphere."
+
+  LAYER 3 — Cinematography + Audio (optional)
+    Advanced instructions can include camera movement or ambient sound effects to achieve an
+    immersive, synchronized audiovisual output.
+    Example: "...slow dolby tracking shot, cinematic lens flare, ambient rain sounds."
+
+Full example prompt:
+  "A woman in a red dress walks through a rainy neon-lit alley, wet cobblestones reflecting
+   colored lights. Slow tracking shot, cinematic lens flare, ambient rain sounds."
+
+
+1.2  Reference Control for Multimodal Inputs
+---------------------------------------------
+In addition to text, you can provide images, audio, or video to lock in specific qualities.
+Seedance 2.0 supports deep referencing of all three media types.
+
+In your prompt, clearly specify the reference object:
+  - "Use the composition of Image 1"
+  - "Match the motion of Video 2"
+  - "Apply the style from Image 1"
+
+The model automatically extracts core features from the reference material and merges them with
+your text instructions, ensuring high fidelity and predictability while still allowing for
+creative variation.
+
+When uploading multiple files in a specific order, use identifiers in your prompt:
+  Image 1, Image 2, ... Image N
+  Video 1, Video 2, ... Video N
+
+
+================================================================================
+02  TEXT RENDERING
+================================================================================
+Seedance 2.0 supports generating on-screen text across T2V, I2V, R2V, and V2V modes.
+
+Key capabilities:
+  - Intelligent Adaptation: Automatically matches font style and color to the scene context.
+  - Granular Control: Explicitly define Style (color/font), Dynamic Behavior (entrance animation,
+    timing), and Layout (position within frame).
+
+Best practices:
+  - Use common vocabulary and widely recognized words. The model performs best with standard
+    English lexicon.
+  - Avoid rare or obscure words — high-complexity words may cause inconsistencies.
+  - Minimize special symbols and non-standard punctuation to maintain visual clarity.
+
+
+2.1  Slogans
+------------
+Prompt template:
+  [Text Content] + [Timing] + [Positioning] + [Entrance/Appearance Style], [Visual Attributes
+  (Color, Font Style)]
+
+Visual Style notes:
+  - Seedance 2.0 automatically identifies scene context to match the most appropriate font.
+  - For strict brand consistency, use logo reference (see section 3.2).
+
+Example prompt (Hand-drawn comic style, food scene with a fried chicken dish visible):
+  "Hand-drawn comic style: Three people are sitting around a table enjoying the fried chicken
+   shown in Image 1, with a friendly and joyful atmosphere. The frame then gradually blurs, and
+   the text 'Bite [laugh emoji] Seedance' in order appears in the center of the screen."
+
+
+2.2  Subtitles
+--------------
+Prompt template:
+  "Display subtitles at the bottom-center with the text. The subtitles must be perfectly
+   synchronized with the audio rhythm and pacing."
+
+Voiceover example (reference: a mountain landscape image):
+  "I2V: A cinematic time-lapse of a mountain landscape transitioning from a vast, starry night to
+   a vibrant dawn. Voiceover: A deep, serene male voice says: 'In the vast silence of the cosmos,
+   our world is but a fleeting moment. Yet, within it, life defiantly thrives.' > Text
+   Integration: Render the narration as subtitles at the bottom-center. Subtitles must be
+   perfectly synchronized with audio timing."
+
+Dubbing/dialogue example (reference: two people at a coffee shop — a man and woman sitting
+across from each other, menu board visible in background):
+  "R2V: A cinematic shot of these two people in Image 1 chatting in a modern office. The woman
+   speaks first with a playful tone: 'You always arrive right on time, don't you just love that
+   perfect timing?' followed by the man's smiling reply: 'I have my own rhythm.' > Text
+   Integration: Render the dialogue as subtitles at the bottom-center of the screen. Subtitles
+   should appear sequentially as each character speaks."
+
+
+2.3  Speech Bubbles
+-------------------
+Prompt template:
+  "[Character] says, '[Dialogue].' Speech bubbles appear around the character containing the
+   spoken text."
+
+Example (reference: anime-style 3D character shown from two angles — front and side profile,
+short bob haircut, black outfit):
+  "Refer to the character design of the girl in Image 1 and Image 2. The scene is set in an apple
+   field: the girl picks one apple, takes a bite, smiles and says 'This is the real deal!'. A
+   speech bubble pops up beside the girl, with this line written inside."
+
+Example (reference: two characters in a hospital hallway — a woman with a bag and a man in a
+jacket, illustrated style):
+  "The two characters from Image 1, both dressed in sportswear, are running on the school
+   playground. The girl looks at the boy, smiling confidently as she says: 'We can definitely do
+   it!'. Cut to a close-up of the boy. He hesitates and replies: 'Are you sure?'. Cut back to a
+   medium close-up of the girl. She speaks in a light, upbeat tone: 'Yes!' Her demeanor is bright
+   and resolute. Speech bubbles containing the corresponding lines appear around the speaking
+   character."
+
+
+================================================================================
+03  IMAGE REFERENCE
+================================================================================
+Seedance 2.0 supports multi-perspective references for subjects, multi-image referencing for
+scene layouts, storyboards, and more.
+
+Upload images in the desired sequence. Use identifiers (Image 1, Image 2, ... Image N) in your
+prompt for precise control.
+
+
+3.1  Multi-Perspective Subject Reference
+-----------------------------------------
+Prompt template:
+  "Refer to / Extract / Combine / Use the [Subject] from [Image N] to generate [Scene
+   Description], maintaining consistent [Subject] features."
+
+Clearly identify the reference objects. The model handles products, characters, animals, etc.
+
+PRODUCTS — Consumer Electronics example:
+  Reference materials: Three photos of the same mirrorless camera — front view (Image 1),
+  angled front view (Image 2), rear view showing screen and controls (Image 3).
+
+  Prompt: "Use the cameras featured in Image 1, Image 2 and Image 3. Replace the original
+   background with a white one, and place the cameras on a white table. The shooting lens first
+   focuses on the cameras in close-up, then slowly rotates 360° with the cameras as the main
+   subject, clearly displaying the front, sides and back of each camera."
+
+PRODUCTS — Home & Lifestyle example:
+  Reference materials: Two photos of a stainless steel thermos — one standalone product shot
+  (Image 1), one held in a hand (Image 2). Both have "Seedance" branding.
+
+  Prompt: "In a warm-toned home setting, present the thermos shown in the reference image in a
+   medium shot. Then smoothly push the camera into a close-up of the thermos. Next, a hand
+   naturally enters the frame off-screen, gently grips the thermos body and picks it up. The
+   camera follows the slight rotating motion of the hand to showcase the thermos."
+
+CHARACTERS example:
+  Reference materials: Three illustrations of the same woman from different angles — front (Image
+  1), three-quarter profile (Image 2), and rear view (Image 3). She wears a beige fitted dress
+  and has long curly hair.
+
+  Prompt: "Refer to the image of the woman in Image 1, Image 2 and Image 3, and generate a scene
+   of her eating a cake in a coffee shop."
+
+
+3.2  Multi-Image Reference
+---------------------------
+Prompt template:
+  "Refer to / Extract / Combine / Follow the [Description of referenced elements] from [Image N]
+   to generate [Scene Description], while maintaining the consistency of [Referenced Elements]."
+
+LOGO REFERENCE example:
+  Reference materials: Image 1 shows a bold stylized "SEEDANCE" logo in blue and gold on a dark
+  background. Image 2 shows a 3D cyberpunk female robot character in black bodysuit with glowing
+  blue trim, standing in a futuristic neon city.
+
+  Prompt: "The scene is set on an aerial corridor in a neon-drenched futuristic metropolis, where
+   flying vehicles and holographic ads intertwine. Featuring the girl from Image 2, the sequence
+   opens with a medium shot of her releasing a silver floating lantern embedded with a holographic
+   projection. The camera then pulls back to reveal floating lanterns flooding the sky, which
+   gradually converge at the center of the frame to form the logo from Image 1. The entire piece
+   adopts a 3D cyberpunk sci-fi animation style."
+
+MULTI-SUBJECT REFERENCE example:
+  Reference materials: Image 1 shows a white Samoyed dog playing with a small white cat on a
+  lawn. Image 2 shows the same Samoyed and cat cuddled together indoors.
+
+  Prompt: "Using the cat and dog from the reference Image 1 and Image 2 as prototypes, the scene
+   unfolds in a cozy apartment. The dog is lying on the ground eating dog food when the cat
+   approaches, extending a paw to nudge the dog. The dog pauses its meal upon noticing the cat,
+   and the cat snuggles up next to the dog. The entire scene features a warm colored tone."
+
+MULTI-ELEMENT REFERENCE example:
+  Reference materials: Five images — Image 1: illustration of a Black woman's face/portrait;
+  Image 2: a blue waitress uniform/dress; Image 3: illustration of a young Black man's face;
+  Image 4: interior of a retro American diner (Joe's Diner) with stools and counter; Image 5:
+  pink cursive "Seedance Love" logo.
+
+  Prompt: "The scene is set in the restaurant from image 4 with people coming and going. The girl
+   from image 1, wearing the clothes from image 2, is organizing the items on the counter. The
+   boy, a customer, from image 3 approaches her to ask for her contact information. The logo from
+   image 5 remains in the bottom right corner throughout."
+
+MULTI-PANEL STORYBOARD REFERENCE example:
+  Reference materials: A single image (Image 1) containing a 4-panel manga-style storyboard
+  showing a martial arts confrontation. Panel 1: two figures facing off at distance on snowy
+  ground; Panel 2: close-up of a figure in black robes in fighting stance; Panel 3: close-up of
+  a woman in red kimono with fierce expression; Panel 4: the woman in red standing amid cracked
+  ground facing the robed figure.
+
+  Prompt: "Refer to the storyboard in Image 1 to create an intense high-energy fight sequence.
+   All storyboard frame compositions from Image 1 shall be presented in strict predefined order,
+   after which the two characters engage in fierce, fast-paced combat."
+
+MULTI-CHARACTER STORYBOARD example (using multiple separate character and scene images):
+  Reference materials: Image 1: anime-style girl portrait (brown hair, casual top); Image 2:
+  middle-aged man wearing a red checked apron, friendly expression; Image 3: sketch storyboard
+  showing the girl sitting at a kitchen table watching from behind, the man cooking at the stove
+  in the background; Image 4: man in plaid apron cooking in the kitchen (matches the storyboard
+  layout).
+
+  Prompt: "Refer to the storyboard composition in Image 3. A girl (her character design refers to
+   Image 1) is waiting for her father to finish cooking, and she says: '[dialogue line]'. Then
+   the camera pans right and cuts to the frame and composition shown in Image 4. The father (his
+   character design refers to Image 2) replies to her: '[dialogue line]'. Next, the camera cuts
+   back to a close-up shot of the daughter's slightly disappointed facial expression, and she
+   says: '[dialogue line]'. Then the shot switches to a close-up of the father's face, and he
+   says: '[dialogue line]'."
+
+
+================================================================================
+04  VIDEO REFERENCE
+================================================================================
+Seedance 2.0 supports video-based referencing.
+
+- If your workflow requires a specific sequence, upload files in order. Use Video 1, Video 2,
+  ... Video N in your prompts for precise mapping.
+- Clearly define the relationship between the generated content and the reference source.
+
+
+4.1  Motion Reference
+---------------------
+Prompt template:
+  "Refer to the [Motion Description] from [Video N] to generate [Scene Description], keeping the
+   motion details consistent."
+
+Example 1 — Cinematic style (reference: a video clip with specific character movements):
+  Reference: Video 1 contains motion reference footage. Image 1 shows an anime girl in a red
+  hoodie. Image 2 shows an anime boy in a blue hoodie. Both are in an urban street setting.
+
+  Prompt: "Refer to the character movements and shot language in Video 1 to create a fight scene
+   with the character from Image 2 on the left and the character from Image 1 on the right.
+   Include intense background music."
+
+Example 2 — Marketing style (reference: a video of a horse running):
+  Prompt: "Referencing the running shape of the horse in the video, generate a scene: a golden
+   steed runs on the grassland, then freezes its magnificent running posture and turns into a
+   horse-shaped gold pendant."
+
+
+4.2  Camera Motion Reference
+-----------------------------
+Prompt template:
+  "Refer to the [Camera Movement Description] from [Video N] to generate [Scene Description],
+   keeping the cinematography consistent."
+
+Example — Technology/Cinematic style:
+  Reference: Video 1 contains a camera motion reference (diving/swooping perspective). Image 1
+  shows a futuristic sci-fi tower surrounded by floating islands in the clouds, with "Seedance"
+  logo text on the building.
+
+  Prompt: "Referring to the camera movement in video 1, create a concept video for a science and
+   technology park, with the tall building in the image as the visual center, also using a
+   first-person diving perspective, to reflect the sense of technology in the park from image 1."
+
+
+4.3  Visual Effects (VFX) Reference
+-------------------------------------
+Prompt template:
+  "Refer to the [VFX Effects Description] from [Video N] to generate [Scene Description], keeping
+   the special effects consistent."
+
+Example 1 — Cinematic style (reference: a video with golden particle effects):
+  Reference material: Image 1 shows a beautiful woman in a flowing blue hanfu (traditional
+  Chinese dress) playing a bamboo flute, with dramatic mountain and waterfall backdrop,
+  photorealistic quality.
+
+  Prompt: "Refer to the golden particle effects in Video 1, so that when the character in Image 1
+   plays the flute, the same particle effects surround their body."
+
+Example 2 — Creative FX style (reference: a video with wing-formation effects):
+  Reference material: Image 1 shows an anime-style schoolgirl in a sailor uniform viewed from
+  behind, walking through a cherry blossom path with golden sunlight filtering through.
+
+  Prompt: "Refer to the special effects shown in Video 1 to generate identical wings for the girl
+   in Image 1, ensuring the wing formation trajectory follows the exact same motion path and
+   sequence depicted in the video."
+
+
+================================================================================
+05  VIDEO EDITING
+================================================================================
+Seedance 2.0 supports video editing including: adding/removing/modifying elements, extending
+duration (forward and backward), and track alignment.
+
+If your project requires a specific sequence, upload files in order. Use "video 1," "video 2,"
+... "video n" in your prompts for precise mapping.
+
+
+5.1  Adding, Removing, or Modifying Elements
+---------------------------------------------
+Prompt templates:
+
+  Adding:
+    "At [Timestamp/Timing] and [Spatial Location] of [Video N], add [Description of intended
+     element]."
+
+  Removing:
+    "Remove [Element to be deleted] from [Video N], keeping the rest of the video content
+     unchanged."
+
+  Modifying:
+    "Replace [Description of element to be changed] in [Video N] with [Description of intended
+     element]."
+
+ADD ELEMENTS example:
+  Reference: Video 1 shows a kitchen counter scene.
+  Prompt: "Add snacks such as fried chicken and pizza to the countertop in Video 1."
+
+REMOVE ELEMENTS example:
+  Reference: Video 1 shows an office desk/table with various items.
+  Prompt: "Remove everything that isn't office stuff from the table in Video 1, keeping the rest
+   of the video content unchanged."
+
+MODIFY ELEMENTS example:
+  Reference: Video 1 shows a perfume bottle in a product video. Image 1 shows a face cream jar
+  with "Seedance" branding on a reflective surface with neutral background.
+  Prompt: "Replace the perfume featured in Video 1 with the face cream from Image 1, with all
+   original motions and camera work preserved."
+
+
+5.2  Extending Videos
+---------------------
+Prompt templates:
+  - "Extend [Video N] forward/backward + [Description of extended content]"
+  - "Generate content before/after [Video N] + [Description of extended content]"
+
+NOTE: The model automatically extracts transition frames for seamless blending. The original
+segments of the input video will NOT be re-generated, ensuring perfect continuity.
+
+EXTEND FORWARD example:
+  Reference: Video 1 shows a group of people meeting outdoors.
+  Prompt: "Generate the content after Video 1: the two men who are late run towards them, the
+   five people finally meet and have a friendly chat."
+
+EXTEND BACKWARD example:
+  Reference: Video 1 shows a scene with a man in a hoodie.
+  Prompt: "Extend the opening segment of Video 1: Set up an over-the-shoulder shot of the man in
+   a hoodie, and the man says: 'It's not that bad. You're just stressed. Everyone goes through
+   this, you just need to keep going.'"
+
+
+5.3  Completing Tracks (Multi-clip Bridging)
+---------------------------------------------
+Prompt template:
+  [Video 1] + [Transition Description] + followed by [Video 2] + [Transition Description] +
+  followed by [Video 3]
+
+IMPORTANT LIMITS:
+  - Maximum of 3 video clips as input.
+  - Total combined duration must not exceed 15 seconds.
+
+SMART TRIMMING: During generation, the model automatically trims the connecting segments of the
+start and end clips, retaining only the necessary frames to ensure seamless and logical synthesis.
+
+Example:
+  Reference: Video 1 shows a leaf falling. Video 2 shows a gust of wind in a different scene.
+
+  Prompt: "Video 1. The moment a leaf falls to the ground, it sets off a special effect of golden
+   particles. A gust of wind blows by, leading into Video 2."
+
+
+================================================================================
+QUICK REFERENCE: PROMPT TEMPLATES SUMMARY
+================================================================================
+
+Text prompts:
+  [Subject + Action] + [Scene/Environment] + [Cinematography/Audio]
+
+Slogans:
+  [Text Content] + [Timing] + [Positioning] + [Entrance Style] + [Visual Attributes]
+
+Subtitles:
+  [Scene Description]. [Character] says: "[Dialogue]." > Text Integration: Render as subtitles
+  at bottom-center, synchronized with audio timing.
+
+Speech bubbles:
+  [Character] says, "[Dialogue]." Speech bubbles appear around the character.
+
+Image subject reference:
+  Refer to / Extract / Combine / Use the [Subject] from [Image N] to generate [Scene], maintaining
+  consistent [Subject] features.
+
+Multi-image reference:
+  Refer to / Extract / Combine / Follow the [Elements] from [Image N] to generate [Scene], while
+  maintaining the consistency of [Referenced Elements].
+
+Motion reference (video):
+  Refer to the [Motion Description] from [Video N] to generate [Scene], keeping the motion
+  details consistent.
+
+Camera motion reference:
+  Refer to the [Camera Movement] from [Video N] to generate [Scene], keeping the cinematography
+  consistent.
+
+VFX reference:
+  Refer to the [VFX Description] from [Video N] to generate [Scene], keeping the special effects
+  consistent.
+
+Video editing — add:
+  At [Timestamp/Location] of [Video N], add [Element].
+
+Video editing — remove:
+  Remove [Element] from [Video N], keeping the rest unchanged.
+
+Video editing — modify:
+  Replace [Element] in [Video N] with [New Element].
+
+Video extension:
+  Extend [Video N] forward/backward + [Content Description]
+  Generate content before/after [Video N] + [Content Description]
+
+Track completion:
+  [Video 1] + [Transition] + followed by [Video 2] + [Transition] + followed by [Video 3]
+  (max 3 clips, max 15 seconds total)

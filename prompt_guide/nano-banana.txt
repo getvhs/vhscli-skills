@@ -1,0 +1,186 @@
+Nano Banana Prompt Guide
+(Image generation and editing with Gemini 3: Nano Banana 2 / Nano Banana Pro)
+
+
+Overview
+
+Nano Banana models interpret the prompt with deep reasoning before
+generating. They reward direction over keyword stuffing -- describe the
+shot like you are briefing a photographer, illustrator, or creative
+director.
+
+
+Best practices
+
+  - Be specific. Concrete details on subject, lighting, and composition
+    beat vague adjectives.
+  - Use positive framing. Describe what you want, not what you don't.
+    Say "empty street", not "no cars".
+  - Control the camera. Photographic and cinematic terms work:
+    "low angle", "aerial view", "shallow depth of field".
+  - Iterate conversationally. Refine with follow-up prompts; the model
+    keeps context.
+  - Lead with a strong verb. Open with the operation: generate, edit,
+    remove, replace, restyle, render, compose.
+
+
+Five prompting frameworks
+
+1) Image generation
+-------------------
+
+A. Text-to-image (no reference images)
+   Short keyword lists underperform on a blank canvas. Direct the shot
+   narratively.
+
+   Formula:
+     [Subject] + [Action] + [Location/context] + [Composition] + [Style]
+
+   Example:
+     [Subject] A striking fashion model wearing a tailored brown dress,
+     sleek boots, holding a structured handbag.
+     [Action] Posing with a confident, statuesque stance, slightly
+     turned.
+     [Location] A seamless, deep cherry red studio backdrop.
+     [Composition] Medium-full shot, center-framed.
+     [Style] Fashion magazine editorial, shot on medium-format analog
+     film, pronounced grain, high saturation, cinematic lighting.
+
+B. Multimodal generation (with reference images)
+   Combine references for character consistency, product placement, or
+   structure-plus-texture composites.
+
+   Formula:
+     [Reference images] + [Relationship instruction] + [New scenario]
+
+   Example:
+     Using the attached napkin sketch as the structure and the attached
+     fabric sample as the texture, transform this into a high-fidelity
+     3D armchair render. Place it in a sun-drenched, minimalist living
+     room.
+
+   Tip: name the role of each reference ("the sketch", "the fabric",
+   "the product photo") so the model knows how to use it.
+
+
+2) Image editing
+----------------
+
+Editing differs from generation: you already have a base image. State
+what changes AND what must stay the same.
+
+A. Conversational editing (no new references)
+   - Semantic masking / inpainting: define the "mask" with language so
+     only part of the image changes.
+   - Be explicit about what must remain unchanged ("keep the lighting,
+     pose, and background identical").
+
+   Example:
+     "Remove the man from the photo. Keep the bench, lighting, and
+     background untouched."
+
+B. Composition and style transfer (with new references)
+   - Adding elements: upload a base image plus an object image, then
+     instruct how to combine them ("place the watch from image 2 on the
+     wrist of the person in image 1, matching scale and shadow").
+   - Style transfer: upload a photo and ask for the same content in
+     another style ("recreate this modern city street as a Van Gogh oil
+     painting, preserving the building layout").
+
+
+3) Real-time information (web-grounded image)
+
+Ask the model to retrieve real-world data, then specify how to render
+it. Useful for weather-, date-, location-, or news-aware visuals.
+
+Formula:
+  [Source/search request] + [Analytical task] + [Visual translation]
+
+Example:
+  [Search] Get the current weather and date in San Francisco.
+  [Analysis] Use that data to set the mood -- if it's raining, make the
+  scene grey and rainy; if sunny, warm and bright.
+  [Visualize] Render it as a miniature city-in-a-cup concept embedded
+  in a realistic, modern smartphone UI.
+
+
+4) Text rendering and localization
+
+The models can render sharp, legible text for posters, diagrams, and
+mockups, with strong multilingual support.
+
+Rules:
+  - Quote exact wording. Put the literal string in quotes:
+    "Happy Birthday", "URBAN EXPLORER".
+  - Choose a font. Describe style or name it: "bold, white sans-serif",
+    "Century Gothic at 12px", "flowing brush script".
+  - Translate / localize. Write the prompt in one language and ask for
+    the on-image text in another.
+  - Text-first workflow. For text-heavy images, settle the copy in chat
+    first, then request the final render with that exact text.
+
+Example (product mockup):
+  A high-end glossy commercial beauty shot of a sleek minimalist
+  nude-colored face moisturizer jar on a warm studio background, soft
+  radiant lighting. Render three lines of text next to the product with
+  this exact styling: top line "GLOW" in a flowing elegant brush script;
+  middle line "10% OFF" in heavy blocky Impact; bottom line "Your First
+  Order" in a thin minimalist Century Gothic. Then translate the text
+  into Korean and Arabic.
+
+Example (typographic poster):
+  A typographic poster on a solid black background; bold letters spell
+  "New York", filling the center of the frame. The text acts as a
+  cut-out window. A photograph of the New York skyline is visible only
+  inside the letterforms.
+
+
+5) Prompt like a creative director
+
+Treat the prompt as direction, not a tag list. The model responds well
+to studio-style controls.
+
+  a. Design the lighting.
+     - Studio: "three-point softbox setup" for even product lighting.
+     - Dramatic: "chiaroscuro lighting with harsh, high contrast";
+       "golden hour backlighting creating long shadows".
+
+  b. Choose camera, lens, and focus.
+     - Hardware: GoPro for immersive distortion; Fujifilm for a color
+       look; disposable camera for raw flash nostalgia.
+     - Lens: "low-angle shot with shallow depth of field (f/1.8)";
+       wide-angle for scale; macro for fine detail.
+
+  c. Define color grading and film stock.
+     - "Shot on 1980s color film, slightly grainy."
+     - "Cinematic color grading with muted teal tones."
+
+  d. Emphasize materiality and texture.
+     - Not "suit jacket" -- "navy blue tweed".
+     - Not "armor" -- "ornate elven plate armor etched with silver leaf".
+     - For mockups: name surfaces, e.g. "minimalist ceramic coffee mug".
+
+
+Quick reference: prompt skeleton
+
+  Verb (generate / edit / restyle / render / compose)
+    + Subject (who/what, with material and texture detail)
+    + Action or pose
+    + Setting / context
+    + Composition (shot type, framing, angle)
+    + Camera + lens + lighting
+    + Style / film stock / color grade
+    + Exact text in quotes (if any) + font description
+    + What must NOT change (for edits)
+
+
+Closing notes
+
+  - Specificity wins. Vague prompts get vague images.
+  - Iterate. Treat the first output as a draft and refine.
+  - Separate concerns: generation = subject/action/context/composition/
+    style; editing = what changes vs. what stays; live data = search +
+    analysis + visualization; text = quotes + fonts + (optional) chat-
+    first drafting.
+  - Pair with siblings: Nano Banana for stills/keyframes, Veo for video
+    between them, Lyria for soundtrack.

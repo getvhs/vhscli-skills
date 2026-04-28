@@ -1,0 +1,598 @@
+GPT-IMAGE-2 PROMPTING GUIDE
+===========================
+
+Source: OpenAI Cookbook — Image Generation Models Prompting Guide
+Scope: gpt-image-2 only (other-model-specific guidance omitted).
+
+
+1. OVERVIEW & CAPABILITIES
+--------------------------
+gpt-image-2 is OpenAI's most capable image model, with stronger image
+quality, improved editing performance, and broader support for
+production workflows. Key capabilities:
+
+- High-fidelity photorealism with natural lighting and accurate materials.
+- Flexible quality–latency tradeoffs.
+- Robust facial and identity preservation for edits.
+- Reliable text rendering with crisp lettering.
+- Complex structured visuals (infographics, diagrams, multi-panel
+  compositions).
+- Precise style control and style transfer.
+- Strong real-world knowledge and reasoning (can infer context, e.g.
+  "Bethel, New York in August 1969" → Woodstock).
+
+
+2. MODEL PARAMETERS
+-------------------
+
+Quality
+  quality = "low"    — latency-sensitive / high-volume; often sufficient.
+  quality = "medium" — balanced default for most production work.
+  quality = "high"   — small/dense text, detailed infographics,
+                       close-up portraits, identity-sensitive edits,
+                       high-resolution outputs.
+
+Input Fidelity
+  input_fidelity is disabled for gpt-image-2 — output is already
+  high fidelity by default.
+
+Variations
+  n — number of image variations to generate (useful e.g. for logos).
+
+Supported Resolutions
+  - Maximum edge length: < 3840 px
+  - Both edges must be multiples of 16
+  - Aspect ratio (long:short) not greater than 3:1
+  - Total pixels: 655,360 to 8,294,400
+  - Experimental zone: above 2560×1440 (3,686,400 px)
+
+Popular Sizes
+  - HD portrait:   1024 × 1536
+  - HD landscape:  1536 × 1024
+  - Square:        1024 × 1024
+  - 2K / QHD:      2560 × 1440  (recommended upper reliability bound)
+  - 4K / UHD:      3840 × 2160  (experimental; may need rounding to
+                                 3824 × 2144 to satisfy the multiple-of-16
+                                 rule)
+
+
+3. CORE PROMPTING FUNDAMENTALS
+------------------------------
+
+3.1 Structure & Organization
+  Write prompts in a consistent order:
+      background / scene → subject → key details → constraints
+  Include the intended use (ad, UI mock, infographic) to set the "mode"
+  and level of polish. For complex requests, use short labeled segments
+  or line breaks rather than one long paragraph.
+
+3.2 Format Flexibility
+  Use whatever format is easiest to maintain. Minimal prompts,
+  descriptive paragraphs, JSON-like structures, instruction-style
+  prompts, and tag-based prompts all work as long as intent and
+  constraints are clear.
+
+3.3 Specificity & Quality Cues
+  - Be concrete about materials, shapes, textures, and visual medium
+    (photo, watercolor, 3D render).
+  - Add targeted "quality levers" only when needed (film grain,
+    textured brushstrokes, macro detail).
+  - For photorealism, include the word "photorealistic" directly to
+    strongly engage the model's photorealistic mode.
+  - Similar phrases — "real photograph," "taken on a real camera,"
+    "professional photography," "iPhone photo" — also help.
+  - Detailed camera specs (lens, aperture) are interpreted loosely;
+    use them for high-level look and composition, not exact physical
+    simulation.
+
+3.4 Composition Control
+  - Framing / viewpoint: close-up, wide, top-down.
+  - Perspective / angle: eye-level, low-angle.
+  - Lighting / mood: soft diffuse, golden hour, high-contrast.
+  - Layout: "logo top-right," "subject centered with negative space
+    on left."
+  - For wide, cinematic, low-light, rain, or neon scenes, add extra
+    detail about scale, atmosphere, and color so the model does not
+    trade mood for surface realism.
+
+3.5 People, Pose & Action
+  Describe scale, body framing, gaze, and object interactions. Examples:
+    - "full body visible, feet included"
+    - "child-sized relative to the table"
+    - "looking down at the open book, not at the camera"
+    - "hands naturally gripping the handlebars"
+
+3.6 Constraints (Preservation)
+  State exclusions and invariants explicitly:
+    "no watermark," "no extra text," "no logos/trademarks,"
+    "preserve identity / geometry / layout / brand elements."
+  For edits use: "change only X" + "keep everything else the same,"
+  and repeat the preserve list on each iteration to reduce drift.
+  For surgical edits, also specify not to alter saturation, contrast,
+  layout, arrows, labels, camera angle, or surrounding objects.
+
+3.7 Text in Images
+  - Put literal text in "quotes" or ALL CAPS.
+  - Specify typography details (font style, size, color, placement)
+    as constraints.
+  - For tricky words (brand names, uncommon spellings), spell them out
+    letter-by-letter.
+  - Use quality="medium" or "high" for small text, dense information
+    panels, and multi-font layouts.
+
+3.8 Multi-Image Inputs
+  - Reference each input by index and description:
+      "Image 1: product photo… Image 2: style reference…"
+  - Describe how they interact: "apply Image 2's style to Image 1."
+  - When compositing, be explicit about which elements move where:
+      "put the bird from Image 1 on the elephant in Image 2."
+
+3.9 Iteration Strategy
+  Long prompts can work well, but debugging is easier if you start
+  with a clean base prompt and refine with small, single-change
+  follow-ups ("make lighting warmer," "remove the extra tree,"
+  "restore the original background"). References like "same style as
+  before" or "the subject" leverage context, but re-specify critical
+  details if they start to drift.
+
+
+4. USE CASES — GENERATION
+-------------------------
+
+4.1 Infographics
+  Recommended: quality="medium" or "high" for dense layouts or heavy
+  in-image text.
+
+  Example prompt:
+      Create a detailed Infographic of the functioning and flow of an
+      automatic coffee machine like a Jura.
+      From bean basket, to grinding, to scale, water tank, boiler, etc.
+      I'd like to understand technically and visually the flow.
+
+4.2 Translation in Images
+  Localize existing designs (ads, UI screenshots, packaging,
+  infographics) into another language without rebuilding the layout.
+  Preserve typography style, placement, spacing, and hierarchy;
+  translate verbatim with no extra words, no reflow unless necessary,
+  no unintended edits to logos, icons, or imagery.
+
+  Example prompt:
+      Translate the text in the infographic to Spanish. Do not change
+      any other aspect of the image.
+
+4.3 Photorealistic Images
+  Prompt as if a real photo is being captured in the moment. Use
+  photography language (lens, lighting, framing) and explicitly ask
+  for real texture (pores, wrinkles, fabric wear, imperfections).
+  Avoid words that imply studio polish or staging. When detail matters,
+  set quality="high".
+
+  Example prompt:
+      Create a photorealistic candid photograph of an elderly sailor
+      standing on a small fishing boat.
+      He has weathered skin with visible wrinkles, pores, and sun
+      texture, and a few faded traditional sailor tattoos on his arms.
+      He is calmly adjusting a net while his dog sits nearby on the
+      deck. Shot like a 35mm film photograph, medium close-up at eye
+      level, using a 50mm lens.
+      Soft coastal daylight, shallow depth of field, subtle film grain,
+      natural color balance.
+      The image should feel honest and unposed, with real skin texture,
+      worn materials, and everyday detail. No glamorization, no heavy
+      retouching.
+
+4.4 World Knowledge
+  gpt-image-2 pairs strong reasoning with world knowledge; it can
+  infer historical / cultural context without being told explicitly.
+
+  Example prompt:
+      Create a realistic outdoor crowd scene in Bethel, New York on
+      August 16, 1969.
+      Photorealistic, period-accurate clothing, staging, and environment.
+
+4.5 Logo Generation
+  Describe brand personality and use case, then ask for a clean,
+  original mark with strong shape, balanced negative space, and
+  scalability across sizes. Use n to request several variations.
+
+  Example prompt:
+      Create an original, non-infringing logo for a company called
+      Field & Flour, a local bakery.
+      The logo should feel warm, simple, and timeless. Use clean,
+      vector-like shapes, a strong silhouette, and balanced negative
+      space.
+      Favor simplicity over detail so it reads clearly at small and
+      large sizes. Flat design, minimal strokes, no gradients unless
+      essential.
+      Plain background. Deliver a single centered logo with generous
+      padding. No watermark.
+
+4.6 Ads Generation
+  Write like a creative brief rather than a purely technical image
+  spec. Describe brand, audience, culture, concept, composition, and
+  exact copy, then let the model make taste-driven creative decisions
+  inside those boundaries.
+
+  Example prompt:
+      Give me a cool in culture ad / fashion shot for a brand called
+      Thread.
+      It's a hip young street brand. The ad shows a group of friends
+      hanging out together with the tagline "Yours to Create."
+      Make it feel like a polished campaign image for a youth
+      streetwear audience: stylish, contemporary, energetic, and
+      tasteful.
+      Use clean composition, strong color direction, natural poses,
+      and premium fashion photography cues.
+      Render the tagline exactly once, clearly and legibly, integrated
+      into the ad layout.
+      No extra text, no watermarks, no unrelated logos.
+
+4.7 Story-to-Comic Strip
+  Define the narrative as a sequence of clear visual beats, one per
+  panel. Keep descriptions concrete and action-focused.
+
+  Example prompt:
+      Create a short vertical comic-style reel with 4 equal-sized
+      panels.
+      Panel 1: The owner leaves through the front door. The pet is
+      framed in the window behind them, small against the glass, eyes
+      wide, paws pressed high, the house suddenly quiet.
+      Panel 2: The door clicks shut. Silence breaks. The pet slowly
+      turns toward the empty house, posture shifting, eyes sharp with
+      possibility.
+      Panel 3: The house transformed. The pet sprawls across the couch
+      like it owns the place, crumbs nearby, sunlight cutting across
+      the room like a spotlight.
+      Panel 4: The door opens. The pet is seated perfectly by the
+      entrance, alert and composed, as if nothing happened.
+
+4.8 UI Mockups
+  Describe the product as if it already exists. Focus on layout,
+  hierarchy, spacing, and real interface elements; avoid concept-art
+  language so the result looks like a shipped interface.
+
+  Example prompt:
+      Create a realistic mobile app UI mockup for a local farmers
+      market.
+      Show today's market with a simple header, a short list of
+      vendors with small photos and categories, a small "Today's
+      specials" section, and basic information for location and hours.
+      Design it to be practical, and easy to use. White background,
+      subtle natural accent colors, clear typography, and minimal
+      decoration.
+      It should look like a real, well-designed, beautiful app for a
+      small local market.
+      Place the UI mockup in an iPhone frame.
+
+4.9 Scientific / Educational Visuals
+  Prompt like an instructional-design brief: audience, lesson
+  objective, visual format, required labels, scientific constraints.
+  Ask for a clean, flat visual system with consistent icon style,
+  clear arrows, readable labels, and enough white space.
+  Use quality="high" for dense labels, diagrams, or assets for slides
+  or course materials.
+
+  Example prompt:
+      Create a simple biology diagram titled "Cellular Respiration at
+      a Glance" for high school students.
+
+      Show how glucose turns into energy inside a cell. Include
+      glycolysis, the Krebs cycle, and the electron transport chain.
+      Use arrows to connect the steps, and label the main molecules:
+      glucose, pyruvate, ATP, NADH, FADH2, CO2, O2, and H2O.
+      Make it look like a clean classroom handout or slide, with a
+      white background, simple icons, clear labels, and easy-to-read
+      text.
+
+      Avoid tiny text, extra decoration, or anything that makes the
+      diagram hard to understand.
+
+4.10 Slides, Diagrams, Charts & Productivity
+  Write like an artifact spec rather than an illustration request.
+  Name the exact deliverable (slide, workflow diagram, chart, page
+  image), define the canvas and hierarchy, provide the real text or
+  data, and describe the visual language.
+  For slides, charts, and diagram-heavy assets, include the numbers
+  and labels directly in the prompt. Use a landscape size for
+  deck-style outputs and quality="high" when the image contains small
+  text, legends, axes, or footnotes.
+
+  Example prompt:
+      Create one pitch-deck slide titled **"Market Opportunity"** that
+      feels like a real Series A fundraising slide from a YC-backed
+      startup.
+
+      Use a clean white background, modern sans-serif typography like
+      Inter, and a crisp, minimal layout. The slide should include:
+
+      * A TAM/SAM/SOM concentric-circle diagram in muted blues and
+        grays
+      * Specific, believable market sizing numbers:
+        * **TAM:** $42B
+        * **SAM:** $8.7B
+        * **SOM:** $340M
+      * A clean bar chart below showing market growth from **2021 to
+        2026**, with a subtle upward trend
+      * Small footnotes: **"AGI Research, 2024"** and **"Internal
+        analysis"**
+      * A company logo placeholder in the bottom-right corner
+
+      The design should look like it belongs in a deck that actually
+      raised money: highly readable text, clear data hierarchy,
+      polished spacing, and professional startup-style visual language.
+
+      Avoid clip art, stock photography, gradients, shadows,
+      decorative elements, or anything that feels generic or
+      overdesigned.
+
+4.11 3D Pop-Up Holiday Card
+  Ideal for seasonal marketing concepts and print previews. Emphasize
+  tactile realism — paper layers, fibers, folds, soft studio lighting.
+
+  Example prompt:
+      Create a Christmas holiday card illustration.
+
+      Scene:
+      a cozy Christmas scene with an old teddy bear sitting inside a
+      keepsake box,
+      slightly worn fur, soft stitching repairs, placed near a window
+      with falling snow outside.
+      The scene suggests the child has grown up, but the memories
+      remain.
+
+      Mood:
+      Warm, nostalgic, gentle, emotional.
+
+      Style:
+      Premium holiday card photography, soft cinematic lighting,
+      realistic textures, shallow depth of field,
+      tasteful bokeh lights, high print-quality composition.
+
+      Constraints:
+      - Original artwork only
+      - No trademarks
+      - No watermarks
+      - No logos
+
+      Include ONLY this card text (verbatim):
+      "Merry Christmas — some memories never fade."
+
+4.12 Collectible Action Figure / Merch Concept
+  For early merch ideation and pitch visuals. Focus on premium
+  product-photography cues (materials, packaging, print clarity) while
+  keeping designs original and non-infringing.
+
+  Example prompt:
+      Create a collectible action figure of a vintage-style toy
+      propeller airplane with rounded wings,
+      a front-mounted spinning propeller, slightly worn paint edges,
+      classic childhood proportions, designed as a nostalgic holiday
+      collectible, in blister packaging.
+
+      Concept:
+      A nostalgic holiday collectible inspired by the simple toy
+      airplanes children used to play with during winter holidays.
+      Evokes warmth, imagination, and childhood wonder.
+
+      Style:
+      Premium toy photography, realistic plastic and painted metal
+      textures, studio lighting, shallow depth of field,
+      sharp label printing, high-end retail presentation.
+
+      Constraints:
+      - Original design only
+      - No trademarks
+      - No watermarks
+      - No logos
+
+      Include ONLY this packaging text (verbatim):
+      "Christmas Memories Edition"
+
+
+5. USE CASES — EDITS
+--------------------
+
+5.1 Style Transfer
+  Keep the visual language of a reference image (palette, texture,
+  brushwork, film grain) while changing the subject or scene. Describe
+  what must stay consistent (style cues) and what must change (new
+  content). Add hard constraints (background, framing, "no extra
+  elements") to prevent drift.
+
+  Example prompt:
+      Use the same style from the input image and generate a man
+      riding a motorcycle on a white background.
+
+5.2 Virtual Clothing Try-On
+  Explicitly lock the person (face, body shape, pose, hair,
+  expression); allow changes only to garments. Require realistic fit
+  (draping, folds, occlusion) and consistent lighting/shadows so the
+  outfit looks naturally worn, not pasted on.
+
+  Example prompt:
+      Edit the image to dress the woman using the provided clothing
+      images. Do not change her face, facial features, skin tone, body
+      shape, pose, or identity in any way. Preserve her exact
+      likeness, expression, hairstyle, and proportions. Replace only
+      the clothing, fitting the garments naturally to her existing
+      pose and body geometry with realistic fabric behavior. Match
+      lighting, shadows, and color temperature to the original photo
+      so the outfit integrates photorealistically, without looking
+      pasted on. Do not change the background, camera angle, framing,
+      or image quality, and do not add accessories, text, logos, or
+      watermarks.
+
+5.3 Drawing → Image / Rendering
+  Preserve layout and perspective, then add realism by specifying
+  plausible materials, lighting, and environment. Include "do not add
+  new elements / text" to avoid creative reinterpretations.
+
+  Example prompt:
+      Turn this drawing into a photorealistic image.
+      Preserve the exact layout, proportions, and perspective.
+      Choose realistic materials and lighting consistent with the
+      sketch intent.
+      Do not add new elements or text.
+
+5.4 Product Mockups
+  Success depends on edge quality (clean silhouette, no fringing /
+  halos) and label integrity (text stays sharp and unchanged). Keep
+  the output background opaque for gpt-image-2 and use a downstream
+  background-removal step if you need a transparent asset. Ask for
+  only light polishing and optionally a subtle contact shadow on a
+  plain background.
+
+  Example prompt:
+      Extract the product from the input image and place it on a plain
+      white opaque background.
+      Output: centered product, crisp silhouette, no halos/fringing.
+      Preserve product geometry and label legibility exactly.
+      Add only light polishing and a subtle realistic contact shadow.
+      Do not restyle the product; only remove background and lightly
+      polish.
+
+5.5 Marketing Creatives with In-Image Text
+  Put the exact copy in quotes, demand verbatim rendering (no extra
+  characters), and describe placement and font style. If text fidelity
+  is imperfect, keep the prompt strict and iterate — small wording /
+  layout tweaks usually improve legibility.
+
+  Example prompt:
+      Create a realistic billboard mockup of the shampoo on a highway
+      scene during sunset.
+      Billboard text (EXACT, verbatim, no extra characters):
+      "Fresh and clean"
+      Typography: bold sans-serif, high contrast, centered, clean
+      kerning.
+      Ensure text appears once and is perfectly legible.
+      No watermarks, no logos.
+
+5.6 Lighting & Weather Transformation
+  Re-stage a photo for different moods, seasons, or time-of-day
+  variants. Change only environmental conditions (lighting direction /
+  quality, shadows, atmosphere, precipitation, ground wetness) while
+  preserving identity, geometry, camera angle, and object placement.
+
+  Example prompt:
+      Make it look like a winter evening with snowfall.
+
+5.7 Object Removal
+  Example prompt:
+      Remove the flower from man's hand. Do not change anything else.
+
+5.8 Insert Person Into Scene
+  Anchor realism by specifying a grounded photographic look (natural
+  lighting, believable detail, no cinematic grading), and lock what
+  must not change about the subject.
+
+  Example prompt:
+      Generate a highly realistic action scene where this person is
+      running away from a large, realistic brown bear attacking a
+      campsite. The image should look like a real photograph someone
+      could have taken, not an overly enhanced or cinematic
+      movie-poster image.
+      She is centered in the image but looking away from the camera,
+      wearing outdoorsy camping attire, with dirt on her face and
+      tears in her clothing. She is clearly afraid but focused on
+      escaping, running away from the bear as it destroys the campsite
+      behind her.
+      The campsite is in Yosemite National Park, with believable
+      natural details. The time of day is dusk, with natural lighting
+      and realistic colors. Everything should feel grounded,
+      authentic, and unstyled, as if captured in a real moment. Avoid
+      cinematic lighting, dramatic color grading, or stylized
+      composition.
+
+5.9 Multi-Image Referencing & Compositing
+  Clearly specify what to transplant, where it goes, and what must
+  remain unchanged. Match lighting, perspective, scale, and shadows
+  so the composite looks naturally captured in the original photo.
+
+  Example prompt:
+      Place the dog from the second image into the setting of image 1,
+      right next to the woman, use the same style of lighting,
+      composition and background. Do not change anything else.
+
+5.10 Interior Design Swap
+  Surgical realism: swap a single object while preserving camera
+  angle, lighting, shadows, and surrounding context so the edit looks
+  like a real photograph, not a redesign.
+
+  Example prompt:
+      In this room photo, replace ONLY white with chairs made of wood.
+      Preserve camera angle, room lighting, floor shadows, and
+      surrounding objects.
+      Keep all other aspects of the image unchanged.
+      Photorealistic contact shadows and fabric texture.
+
+
+6. MULTI-IMAGE WORKFLOW — CHILDREN'S BOOK CHARACTER CONSISTENCY
+---------------------------------------------------------------
+For multi-page illustration pipelines where character drift is
+unacceptable, build a reusable "character anchor" and reference it on
+every subsequent page. Allow environmental and narrative variation
+while locking character details.
+
+Step 1 — Character anchor prompt:
+    Create a children's book illustration introducing a main character.
+
+    Character:
+    A young, storybook-style hero inspired by a little forest outlaw,
+    wearing a simple green hooded tunic, soft brown boots, and a small
+    belt pouch.
+    The character has a kind expression, gentle eyes, and a brave but
+    warm demeanor.
+    Carries a small wooden bow used only for helping, never harming.
+
+    Theme:
+    The character protects and rescues small forest animals like
+    squirrels, birds, and rabbits.
+
+    Style:
+    Children's book illustration, hand-painted watercolor look,
+    soft outlines, warm earthy colors, whimsical and friendly.
+    Proportions suitable for picture books (slightly oversized head,
+    expressive face).
+
+    Constraints:
+    - Original character (no copyrighted characters)
+    - No text
+    - No watermarks
+    - Plain forest background to clearly showcase the character
+
+Step 2 — Story continuation prompt (reuse the anchor image as input):
+    Continue the children's book story using the same character.
+
+    Scene:
+    The same young forest hero is gently helping a frightened squirrel
+    out of a fallen tree after a winter storm.
+    The character kneels beside the squirrel, offering reassurance.
+
+    Character Consistency:
+    - Same green hooded tunic
+    - Same facial features, proportions, and color palette
+    - Same gentle, heroic personality
+
+    Style:
+    Children's book watercolor illustration,
+    soft lighting, snowy forest environment,
+    warm and comforting mood.
+
+    Constraints:
+    - Do not redesign the character
+    - No text
+    - No watermarks
+
+
+7. MIGRATION & UPGRADE PATH
+---------------------------
+- Upgrade to gpt-image-2 for customer-facing assets, photorealistic
+  generation, editing-heavy flows, brand-sensitive creative,
+  text-in-image work, and any workflow where better first-pass quality
+  reduces manual review or reruns.
+- Consider gpt-image-1-mini instead of legacy models only when the
+  main goal is lowering cost for large batches of exploratory or
+  lower-stakes images.
+- During migration, keep prompts largely the same at first, then
+  retune only after comparing output quality, latency, and retry
+  rates on your real workload.
