@@ -11,19 +11,15 @@ Run `vhscli --help` or `vhscli <command> --help` to see current help — the CLI
 
 ## Invocation
 
-The package is `@getvhs/vhscli`. Two ways to run:
+Always run via `npx @getvhs/vhscli@latest` so you pick up the newest models, flags, and fixes. Don't pin a version, and don't call a bare `vhscli` binary even if one is on PATH — it may be stale.
 
 ```
-# no install (recommended for one-offs)
-npx @getvhs/vhscli <command> ...
-
-# installed binary
-vhscli <command> ...
+npx @getvhs/vhscli@latest <command> ...
 ```
 
-Throughout this doc, commands are written as `vhscli ...`. If `vhscli` isn't on PATH, prefix with `npx @getvhs/vhscli`.
+Throughout this doc, commands are written as `vhscli ...` for readability — substitute `npx @getvhs/vhscli@latest ...` when running.
 
-Requires Node.js ≥ 22. `file` is needed for MIME detection; `sips` (macOS) for image conversion; `ffmpeg` for cross-format video conversion.
+Requires Node.js ≥ 22. `file` is needed for MIME detection; `sips` (ships with macOS) for image conversion; `ffmpeg` for cross-format video conversion.
 
 ## Top-level
 
@@ -350,15 +346,9 @@ Higher fps = more detail but more tokens and slower. Lower fps = cheaper but may
 ## Tips
 
 - Always quote prompts.
-- `-o` is optional for `vhscli generate` — defaults to `./vhscli-<model>-<timestamp>.<ext>` in the current folder.
-- `vhscli chat` writes to stdout and does not save anything to disk.
-- Every subcommand supports `--help` and `-h`.
-- Prompts accept `-` to read from stdin: `cat prompt.txt | vhscli generate seedream-5 -`.
+- `-o` is optional for `vhscli generate` — defaults to `./vhscli-<model>-<timestamp>.<ext>` in the current folder. Output format is detected from the `-o` extension; mismatches are transcoded via `sips` (images) or `ffmpeg` (videos).
 - Short options accept no-space form: `-ofoo.jpg`. Long options accept `=`: `--size=2K`.
 - Use `--` to pass a prompt starting with a dash: `vhscli generate seedream-5 -o x.jpg -- "-weird prompt"`.
-- Output format is detected from your `-o` extension; mismatches are transcoded via `sips` (images) or `ffmpeg` (videos), so those tools must be installed for cross-format conversion. `sips` ships with macOS.
 - Reference images (`-i`, `--first-frame`, `--last-frame`) can be any common format — the cli detects the real mime via `file` and auto-converts non-jpeg/png inputs (e.g. heic, webp, tiff, bmp) to jpeg via `sips` before upload.
 - Uploads are deduplicated by content hash, so passing the same reference repeatedly is cheap.
 - Unknown command? `vhscli` will suggest the closest match.
-- If a `generate` is aborted after it printed `task_id: ...`, keep that id; `vhscli resume <task_id>` will finish the download.
-- If behavior seems off, re-run `vhscli <command> --help` — the CLI is the source of truth.
