@@ -112,9 +112,9 @@ Mode is picked from your flags:
 
 Options:
 
-- `-i`, `--image <path>` — image to ask about (repeat `-i` for more)
-- `-f`, `--file <path>` — pdf document to ask about (repeat `-f` for more)
-- `-v`, `--video <path>` — single video to ask about
+- `-i <path>` — image to ask about (repeat `-i` for more)
+- `-f <path>` — pdf document to ask about (repeat `-f` for more)
+- `-v <path>` — single video to ask about
 - `--fps <n>` — frames/sec sampled from the video, 0.2–5 (default: 1)
 
 One-shot — each call is independent, no memory of previous calls. Output goes
@@ -142,7 +142,7 @@ vhscli generate seedream-5 <prompt> [-o <path>] [-i <image>...] [--size <size>]
 Options:
 
 - `-o`, `--output <path>` — output file path (default: `./vhscli-seedream-5-<timestamp>.jpg`)
-- `-i`, `--image <path>` — reference image, max 14 (repeat `-i` for more)
+- `-i <path>` — reference image, max 14 (repeat `-i` for more)
 - `--size <size>` — `2K`, `3K`, or `WxH` like `1024x1536` (default: 2K)
   - WxH pixel count must be in [3,686,400, 10,404,496]
   - WxH aspect ratio must be in [1:16, 16:1]
@@ -169,7 +169,7 @@ vhscli generate seedream-4-5 <prompt> [-o <path>] [-i <image>...] [--size <size>
 Options:
 
 - `-o`, `--output <path>` — output file path (default: `./vhscli-seedream-4-5-<timestamp>.jpg`)
-- `-i`, `--image <path>` — reference image, max 14 (repeat `-i` for more)
+- `-i <path>` — reference image, max 14 (repeat `-i` for more)
 - `--size <size>` — `2K`, `4K`, or `WxH` (default: 2K)
   - WxH pixel count must be in [3,686,400, 16,777,216]
   - WxH aspect ratio must be in [1:16, 16:1]
@@ -193,7 +193,7 @@ vhscli generate nano-banana-2 <prompt> [-o <path>] [-i <image>...]
 Options:
 
 - `-o`, `--output <path>` — output file path (default: `./vhscli-nano-banana-2-<timestamp>.png`)
-- `-i`, `--image <path>` — reference image, max 14 (repeat `-i` for more)
+- `-i <path>` — reference image, max 14 (repeat `-i` for more)
 - `--ratio <r>` — aspect ratio (default: 1:1). one of: `1:1`, `1:4`, `1:8`,
   `2:3`, `3:2`, `3:4`, `4:1`, `4:3`, `4:5`, `5:4`, `8:1`, `9:16`, `16:9`,
   `21:9`
@@ -221,7 +221,7 @@ vhscli generate nano-banana-pro <prompt> [-o <path>] [-i <image>...] [--ratio <r
 Options:
 
 - `-o`, `--output <path>` — output file path (default: `./vhscli-nano-banana-pro-<timestamp>.png`)
-- `-i`, `--image <path>` — reference image, max 14 (repeat `-i` for more)
+- `-i <path>` — reference image, max 14 (repeat `-i` for more)
 - `--ratio <r>` — aspect ratio (default: 1:1). one of: `1:1`, `2:3`, `3:2`,
   `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`
 - `--size <size>` — `1K`, `2K`, or `4K` (default: 1K)
@@ -246,12 +246,12 @@ vhscli generate gpt-image-2 <prompt> [-o <path>] [-i <image>...] [--mask <path>]
 Options:
 
 - `-o`, `--output <path>` — output file path (default: `./vhscli-gpt-image-2-<timestamp>.png`)
-- `-i`, `--image <path>` — reference image for edits (repeat `-i` for more).
-  switches to the edit endpoint
+- `-i <path>` — reference image for edits (repeat `-i` for more). switches
+  to the edit endpoint
 - `--mask <path>` — edit mask (png with transparent pixels marking edit
   regions); requires `-i`
-- `--size <size>` — preset (`auto`, `1024x1024`, `1536x1024`, `1024x1536`,
-  `2048x2048`, `2048x1152`, `3840x2160`) or `WxH` (default: auto)
+- `--size <size>` — preset (`1024x1024`, `1536x1024`, `1024x1536`,
+  `2048x2048`, `2048x1152`, `3840x2160`) or `WxH` (default: 1024x1024)
   - both sides must be multiples of 16, max edge 3840
   - total pixels in [655,360, 8,294,400]
   - aspect ratio in [1:3, 3:1]
@@ -278,7 +278,7 @@ vhscli generate seedance-2 <prompt> [-o <path>]
                            [--first-frame <image>] [--last-frame <image>]
                            [-i <image>...] [-v <video>...] [-a <audio>...]
                            [--ratio <r>] [--resolution <res>] [--duration <n>]
-                           [--silent] [--seed <n>]
+                           [--no-audio] [--seed <n>]
 ```
 
 Mode is picked from your flags:
@@ -292,21 +292,21 @@ Options:
 - `-o`, `--output <path>` — output file path (default: `./vhscli-seedance-2-<timestamp>.mp4`)
 - `--first-frame <image>` — use as the first frame
 - `--last-frame <image>` — use as the last frame (requires `--first-frame`)
-- `-i`, `--image <path>` — reference image, max 9 (repeat `-i`). conflicts
-  with `--first-frame`
-- `-v`, `--video <path>` — reference video, max 3 (repeat `-v`)
-- `-a`, `--audio <path>` — reference audio, max 3 (repeat `-a`). requires `-i`
-  or `-v`
-- `--ratio <r>` — aspect ratio (default: adaptive). one of: `16:9`, `4:3`,
+- `-i <path>` — reference image, max 9 (repeat `-i`). conflicts with
+  `--first-frame`
+- `-v <path>` — reference video, max 3 (repeat `-v`)
+- `-a <path>` — reference audio, max 3 (repeat `-a`). requires `-i` or `-v`
+- `--ratio <r>` — aspect ratio (default: 16:9). one of: `16:9`, `4:3`,
   `1:1`, `3:4`, `9:16`, `21:9`, `adaptive`
 - `--resolution <res>` — `480p`, `720p`, or `1080p` (default: 720p)
-- `--duration <n>` — length in seconds, 4–15, or `-1` for auto (default: 5)
-- `--silent` — make a silent video (no audio track)
+- `--duration <n>` — length in seconds, 4–15 (default: 5)
+- `--audio` / `--no-audio` — toggle the audio track (default: `--audio`).
+  pass `--no-audio` for a silent video
 - `--seed <n>` — random seed for reproducible output
 
-Defaults to 5s @ 720p with audio. Jobs run in the cloud and can take minutes —
-the CLI polls automatically, but if it's interrupted, save the printed
-`task_id` and use `vhscli resume <task_id>` later.
+Defaults to 5s @ 720p, 16:9, with audio. Jobs run in the cloud and can take
+minutes — the CLI polls automatically, but if it's interrupted, save the
+printed `task_id` and use `vhscli resume <task_id>` later.
 
 Examples:
 
