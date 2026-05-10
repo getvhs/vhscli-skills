@@ -345,7 +345,7 @@ Behavior:
 - Output extension is decided by the model (`mp4` for videos, `png`/`jpg` for
   images); pass `-o` to override the path/extension (transcoded if needed).
 - Exit code is non-zero on task error, missing task, or save failure.
-- `vhscli chat` does not create a resumable task — chat is fast and streams to stdout.
+- `vhscli chat` does not create a resumable task — chat is fast and prints to stdout.
 
 Example:
 
