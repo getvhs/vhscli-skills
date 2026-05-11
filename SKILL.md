@@ -297,7 +297,7 @@ Options:
 - `-v <path>` — reference video, max 3 (repeat `-v`)
 - `-a <path>` — reference audio, max 3 (repeat `-a`). requires `-i` or `-v`
 - `--ratio <r>` — aspect ratio (default: 16:9). one of: `16:9`, `4:3`,
-  `1:1`, `3:4`, `9:16`, `21:9`, `adaptive`
+  `1:1`, `3:4`, `9:16`, `21:9`
 - `--resolution <res>` — `480p`, `720p`, or `1080p` (default: 720p)
 - `--duration <n>` — length in seconds, 4–15 (default: 5)
 - `--audio` / `--no-audio` — toggle the audio track (default: `--audio`).
