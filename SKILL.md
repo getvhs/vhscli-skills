@@ -45,10 +45,13 @@ Commands:
 - `logout` — log out and delete local access tokens
 - `whoami` — print the logged-in user's email
 - `models` — list available models
-- `generate <model> <prompt> [-o <path>]` — generate an image or video
+- `generate <model> <prompt> [-o <path>]` — generate an image or video, wait,
+  and save it
+- `submit <model> <prompt> [-o <path>]` — submit the same task as `generate`
+  but exit immediately (writes a `<output>.vhs_task` sidecar to resume later)
 - `chat <prompt>` — chat with seed-2.0 (text, image, video, or pdf input)
-- `resume <task_id> [-o <output>]` — finish a generation that was aborted, by
-  task id
+- `resume <files...>` — finish one or more aborted generations from their
+  `.vhs_task` sidecar files
 
 ## Auth
 
@@ -305,8 +308,11 @@ Options:
 - `--seed <n>` — random seed for reproducible output
 
 Defaults to 5s @ 720p, 16:9, with audio. Jobs run in the cloud and can take
-minutes — the CLI polls automatically, but if it's interrupted, save the
-printed `task_id` and use `vhscli resume <task_id>` later.
+minutes — the CLI polls automatically. If you don't want to block, use
+`vhscli submit seedance-2 ...` (same flags) to detach immediately, then
+`vhscli resume <output>.vhs_task` later. If a `vhscli generate` is interrupted
+mid-poll, the sidecar it wrote at start (`<output>.vhs_task`) is what you pass
+to `resume`.
 
 Examples:
 
@@ -326,32 +332,104 @@ vhscli generate seedance-2 "lip sync the words" -o out.mp4 -i face.jpg -a voice.
 
 ---
 
-## vhscli resume — finish an aborted generation
+## The `.vhs_task` sidecar — what `generate`, `submit`, and `resume` share
+
+As soon as `vhscli generate` or `vhscli submit` has a task id from the
+backend, it writes a tiny sidecar next to the intended output:
 
 ```
-vhscli resume <task_id> [-o <output>]
+<output>.vhs_task        # JSON: {"id": "<uuid>"}
+# e.g. clip.mp4.vhs_task, fox.jpg.vhs_task
 ```
 
-Every `vhscli generate` command prints a line `task_id: <uuid>` to stdout
-before kicking off the backend task. If the cli process is aborted
-mid-generation (ctrl-c, crash, closed terminal, lost network), the backend
-keeps running; save that id and later run `vhscli resume <task_id>` to wait
-for it and download the result.
+- `generate` keeps polling and, on success, saves the media to `<output>` and
+  removes the sidecar. On a task error it also removes the sidecar and exits
+  non-zero.
+- `submit` writes the sidecar and exits immediately, leaving the backend task
+  running.
+- `resume <files...>` re-attaches to one or more sidecars: waits if the task
+  is still running, saves the media to the path implied by the sidecar
+  filename (`clip.mp4.vhs_task` → `clip.mp4`), and removes the sidecar.
 
-Behavior:
+`vhscli chat` does not use this sidecar — chat is fast and prints to stdout.
 
-- Polls the task row until it has a result or an error, then saves the result.
-- The cli dispatches on the task's endpoint and saves with the right model's logic.
-- Output extension is decided by the model (`mp4` for videos, `png`/`jpg` for
-  images); pass `-o` to override the path/extension (transcoded if needed).
-- Exit code is non-zero on task error, missing task, or save failure.
-- `vhscli chat` does not create a resumable task — chat is fast and prints to stdout.
+If `-o` was not passed, the sidecar is named after the auto-generated default
+output (`vhscli-<model>-<timestamp>.<ext>.vhs_task` in the current folder).
+**For long jobs (`seedance-2` especially), pass `-o` so the sidecar has a
+predictable name you can resume.**
 
-Example:
+---
+
+## vhscli submit — submit a task and exit (don't wait)
 
 ```
-# kick off a generation, note the printed task_id, then if it aborts:
-vhscli resume 8f3a1b2c-9e0f-4a1b-9c8d-1e2f3a4b5c6d -o cat.mp4
+vhscli submit <model> <prompt> [-o <path>] [...same flags as `vhscli generate <model>`]
+```
+
+`submit` takes the **same models and the same options** as `generate`
+(`seedance-2`, `seedream-5`, `seedream-4-5`, `nano-banana-2`,
+`nano-banana-pro`, `gpt-image-2`). The only difference is that after creating
+the task and writing `<output>.vhs_task`, it exits without polling.
+
+Use it when:
+
+- The job is long (e.g. seedance video) and you don't want to keep the
+  terminal blocked.
+- You want to fan out several tasks in parallel and pull results later.
+
+Pair it with `vhscli resume <output>.vhs_task` to fetch the result.
+
+Examples:
+
+```
+# kick off a video, get the terminal back, finish later
+vhscli submit seedance-2 "a robot dancing in tokyo at night" -o robot.mp4
+# ... do other work ...
+vhscli resume robot.mp4.vhs_task
+
+# fan out several image jobs, then collect them all
+vhscli submit seedream-5 "a red fox in a snowy forest" -o fox.jpg
+vhscli submit seedream-5 "a blue jay on a branch"      -o jay.jpg
+vhscli submit seedream-5 "an orca breaching"           -o orca.jpg
+vhscli resume fox.jpg.vhs_task jay.jpg.vhs_task orca.jpg.vhs_task
+```
+
+---
+
+## vhscli resume — finish aborted generations from sidecar files
+
+```
+vhscli resume <files...>
+```
+
+Takes one or more `.vhs_task` sidecar files (any mix of models). For each
+sidecar, `resume`:
+
+- Reads the task id from the sidecar.
+- Derives the output path by stripping the trailing `.vhs_task`
+  (`clip.mp4.vhs_task` → `clip.mp4`). The extension on that derived path
+  decides the saved format (transcoded via `sips`/`ffmpeg` if it differs from
+  what the provider returns).
+- Polls the task row until it has a result or an error, dispatches on the
+  task's endpoint, and saves the media with the right model's logic.
+- Removes the sidecar on success (or on a non-recoverable task error).
+- Processes files sequentially; exits non-zero on the first failure (later
+  sidecars stay on disk and can be resumed again).
+
+When to use `resume`:
+
+- You ran `vhscli submit ...` and now want the result.
+- Your `vhscli generate ...` was interrupted (ctrl-c, crash, closed terminal,
+  lost network) — the sidecar it wrote at the start is still on disk.
+
+You cannot resume by raw task id any more; if you only have an id, recreate
+the sidecar manually: `echo '{"id":"<uuid>"}' > out.mp4.vhs_task`.
+
+Examples:
+
+```
+vhscli resume clip.mp4.vhs_task
+vhscli resume a.jpg.vhs_task b.jpg.vhs_task c.jpg.vhs_task
 ```
 
 ---
@@ -437,10 +515,11 @@ may miss brief events.
 ## Tips
 
 - Always quote prompts.
-- `-o` is optional for `vhscli generate` — defaults to
+- `-o` is optional for `vhscli generate` / `vhscli submit` — defaults to
   `./vhscli-<model>-<timestamp>.<ext>` in the current folder. Output format is
   detected from the `-o` extension; mismatches are transcoded via `sips`
-  (images) or `ffmpeg` (videos).
+  (images) or `ffmpeg` (videos). For `submit`, pass `-o` so the resulting
+  `<output>.vhs_task` sidecar has a name you can find later.
 - Short options accept no-space form: `-ofoo.jpg`. Long options accept `=`:
   `--size=2K`.
 - Use `--` to pass a prompt starting with a dash:
