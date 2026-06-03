@@ -26,8 +26,7 @@ npx @getvhs/vhscli@latest <command> ...
 Throughout this doc, commands are written as `vhscli ...` for readability —
 substitute `npx @getvhs/vhscli@latest ...` when running.
 
-Requires Node.js ≥ 22. `file` is needed for MIME detection; `sips` (ships with
-macOS) for image conversion; `ffmpeg` for cross-format video conversion.
+Requires Node.js ≥ 22.
 
 ## Top-level
 
@@ -144,15 +143,14 @@ vhscli generate seedream-5 <prompt> [-o <path>] [-i <image>...] [--size <size>]
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `./vhscli-seedream-5-<timestamp>.jpg`)
+- `-o`, `--output <path>` — output file path (default: `vhscli-seedream-5-<timestamp>.jpg`)
 - `-i <path>` — reference image, max 14 (repeat `-i` for more)
 - `--size <size>` — `2K`, `3K`, or `WxH` like `1024x1536` (default: 2K)
   - WxH pixel count must be in [3,686,400, 10,404,496]
   - WxH aspect ratio must be in [1:16, 16:1]
 
-Output format is determined by the output path extension (`.png`,
-`.jpg`/`.jpeg`, `.webp`). The provider returns png or jpeg; the cli transcodes
-via `sips` if the extension differs.
+Output format follows the `-o` extension (`.png`, `.jpg`/`.jpeg`, `.webp`); the
+CLI converts if needed.
 
 Examples:
 
@@ -171,7 +169,7 @@ vhscli generate seedream-4-5 <prompt> [-o <path>] [-i <image>...] [--size <size>
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `./vhscli-seedream-4-5-<timestamp>.jpg`)
+- `-o`, `--output <path>` — output file path (default: `vhscli-seedream-4-5-<timestamp>.jpg`)
 - `-i <path>` — reference image, max 14 (repeat `-i` for more)
 - `--size <size>` — `2K`, `4K`, or `WxH` (default: 2K)
   - WxH pixel count must be in [3,686,400, 16,777,216]
@@ -185,32 +183,27 @@ vhscli generate seedream-4-5 "a mountain at sunrise" -o mountain.jpg --size 4K
 
 ---
 
-## vhscli generate nano-banana-2 — generate an image (Google, with search grounding)
+## vhscli generate nano-banana-2 — generate an image (Google)
 
 ```
-vhscli generate nano-banana-2 <prompt> [-o <path>] [-i <image>...]
-                              [--ratio <r>] [--size <size>]
-                              [--think <level>] [--search] [--image-search]
+vhscli generate nano-banana-2 <prompt> [-o <path>] [-i <image>...] [--size <size>]
 ```
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `./vhscli-nano-banana-2-<timestamp>.png`)
+- `-o`, `--output <path>` — output file path (default: `vhscli-nano-banana-2-<timestamp>.png`)
 - `-i <path>` — reference image, max 14 (repeat `-i` for more)
-- `--ratio <r>` — aspect ratio (default: 1:1). one of: `1:1`, `1:4`, `1:8`,
-  `2:3`, `3:2`, `3:4`, `4:1`, `4:3`, `4:5`, `5:4`, `8:1`, `9:16`, `16:9`,
-  `21:9`
 - `--size <size>` — `512`, `1K`, `2K`, or `4K` (default: 1K)
-- `--think <level>` — how hard the model thinks: `minimal` or `high` (default: minimal)
-- `--search` — use google search while generating
-- `--image-search` — also use google image search (implies `--search`)
+
+Output is always square (1:1). Describe the framing you want in the prompt if
+you need a tall or wide composition.
 
 Examples:
 
 ```
-vhscli generate nano-banana-2 "90s skateboarder poster" -o poster.png --ratio 9:16 --size 2K
-vhscli generate nano-banana-2 "diagram of the latest iphone" -o d.png --image-search
-vhscli generate nano-banana-2 "a typographic poster spelling 'NEW YORK' over a skyline" --think high
+vhscli generate nano-banana-2 "remove the man from the photo, keep everything else" -i photo.jpg
+vhscli generate nano-banana-2 "90s skateboarder poster, vertical composition" -o poster.png --size 2K
+vhscli generate nano-banana-2 "a glossy candle in a bell jar on a marble counter, soft light"
 ```
 
 ---
@@ -218,24 +211,23 @@ vhscli generate nano-banana-2 "a typographic poster spelling 'NEW YORK' over a s
 ## vhscli generate nano-banana-pro — generate an image (Google, premium)
 
 ```
-vhscli generate nano-banana-pro <prompt> [-o <path>] [-i <image>...] [--ratio <r>] [--size <size>]
+vhscli generate nano-banana-pro <prompt> [-o <path>] [-i <image>...] [--size <size>]
 ```
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `./vhscli-nano-banana-pro-<timestamp>.png`)
+- `-o`, `--output <path>` — output file path (default: `vhscli-nano-banana-pro-<timestamp>.png`)
 - `-i <path>` — reference image, max 14 (repeat `-i` for more)
-- `--ratio <r>` — aspect ratio (default: 1:1). one of: `1:1`, `2:3`, `3:2`,
-  `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`
 - `--size <size>` — `1K`, `2K`, or `4K` (default: 1K)
 
-Higher-quality sibling of nano-banana-2 — better text rendering, richer
-textures. No `--search` or `--think` flags.
+Output is always square (1:1). Higher-quality sibling of nano-banana-2 — better
+text rendering and richer textures.
 
-Example:
+Examples:
 
 ```
-vhscli generate nano-banana-pro "studio portrait, cinematic lighting" -o portrait.jpg --ratio 3:4 --size 2K
+vhscli generate nano-banana-pro "studio portrait, cinematic lighting, three-quarter framing" -o portrait.jpg --size 2K
+vhscli generate nano-banana-pro "a sun-drenched minimalist living room with a 3d armchair from this sketch" -i sketch.jpg
 ```
 
 ---
@@ -243,32 +235,27 @@ vhscli generate nano-banana-pro "studio portrait, cinematic lighting" -o portrai
 ## vhscli generate gpt-image-2 — generate or edit an image (OpenAI)
 
 ```
-vhscli generate gpt-image-2 <prompt> [-o <path>] [-i <image>...] [--mask <path>] [--size <size>]
+vhscli generate gpt-image-2 <prompt> [-o <path>] [-i <image>...] [--size <size>]
 ```
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `./vhscli-gpt-image-2-<timestamp>.png`)
-- `-i <path>` — reference image for edits (repeat `-i` for more). switches
-  to the edit endpoint
-- `--mask <path>` — edit mask (png with transparent pixels marking edit
-  regions); requires `-i`
+- `-o`, `--output <path>` — output file path (default: `vhscli-gpt-image-2-<timestamp>.png`)
+- `-i <path>` — reference image for edits (repeat `-i` for more)
 - `--size <size>` — preset (`1024x1024`, `1536x1024`, `1024x1536`,
   `2048x2048`, `2048x1152`, `3840x2160`) or `WxH` (default: 1024x1024)
   - both sides must be multiples of 16, max edge 3840
   - total pixels in [655,360, 8,294,400]
   - aspect ratio in [1:3, 3:1]
 
-Output format is derived from the `-o` extension (`.png`, `.jpg`/`.jpeg`,
-`.webp`) and sent to the provider — no local transcode. Use png or webp for
-transparent backgrounds.
+Output format follows the `-o` extension (`.png`, `.jpg`/`.jpeg`, `.webp`); the
+CLI converts if needed. Use png or webp when you need transparency.
 
 Examples:
 
 ```
 vhscli generate gpt-image-2 "a children's book drawing of a veterinarian examining a cat"
 vhscli generate gpt-image-2 "replace the background with a starry night, keep the subject unchanged" -i photo.jpg
-vhscli generate gpt-image-2 "add a red balloon in the masked area" -i room.png --mask hole.png
 vhscli generate gpt-image-2 "ultra-wide landscape of the swiss alps at golden hour" --size 3840x2160 -o alps.jpg
 ```
 
@@ -281,7 +268,7 @@ vhscli generate seedance-2 <prompt> [-o <path>]
                            [--first-frame <image>] [--last-frame <image>]
                            [-i <image>...] [-v <video>...] [-a <audio>...]
                            [--ratio <r>] [--resolution <res>] [--duration <n>]
-                           [--no-audio] [--seed <n>]
+                           [--no-audio]
 ```
 
 Mode is picked from your flags:
@@ -292,7 +279,7 @@ Mode is picked from your flags:
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `./vhscli-seedance-2-<timestamp>.mp4`)
+- `-o`, `--output <path>` — output file path (default: `vhscli-seedance-2-<timestamp>.mp4`)
 - `--first-frame <image>` — use as the first frame
 - `--last-frame <image>` — use as the last frame (requires `--first-frame`)
 - `-i <path>` — reference image, max 9 (repeat `-i`). conflicts with
@@ -305,7 +292,6 @@ Options:
 - `--duration <n>` — length in seconds, 4–15 (default: 5)
 - `--audio` / `--no-audio` — toggle the audio track (default: `--audio`).
   pass `--no-audio` for a silent video
-- `--seed <n>` — random seed for reproducible output
 
 Defaults to 5s @ 720p, 16:9, with audio. Jobs run in the cloud and can take
 minutes — the CLI polls automatically. If you don't want to block, use
@@ -407,12 +393,10 @@ sidecar, `resume`:
 
 - Reads the task id from the sidecar.
 - Derives the output path by stripping the trailing `.vhs_task`
-  (`clip.mp4.vhs_task` → `clip.mp4`). The extension on that derived path
-  decides the saved format (transcoded via `sips`/`ffmpeg` if it differs from
-  what the provider returns).
-- Polls the task row until it has a result or an error, dispatches on the
-  task's endpoint, and saves the media with the right model's logic.
-- Removes the sidecar on success (or on a non-recoverable task error).
+  (`clip.mp4.vhs_task` → `clip.mp4`). The extension on that path sets the
+  saved format; the CLI converts if needed.
+- Waits for the task to finish, saves the media, and removes the sidecar on
+  success (or on a non-recoverable task error).
 - Processes files sequentially; exits non-zero on the first failure (later
   sidecars stay on disk and can be resumed again).
 
@@ -516,18 +500,17 @@ may miss brief events.
 
 - Always quote prompts.
 - `-o` is optional for `vhscli generate` / `vhscli submit` — defaults to
-  `./vhscli-<model>-<timestamp>.<ext>` in the current folder. Output format is
-  detected from the `-o` extension; mismatches are transcoded via `sips`
-  (images) or `ffmpeg` (videos). For `submit`, pass `-o` so the resulting
-  `<output>.vhs_task` sidecar has a name you can find later.
+  `vhscli-<model>-<timestamp>.<ext>` in the current folder. Output format
+  follows the `-o` extension; the CLI converts if needed. For `submit`, pass
+  `-o` so the resulting `<output>.vhs_task` sidecar has a name you can find
+  later.
 - Short options accept no-space form: `-ofoo.jpg`. Long options accept `=`:
   `--size=2K`.
 - Use `--` to pass a prompt starting with a dash:
   `vhscli generate seedream-5 -o x.jpg -- "-weird prompt"`.
 - Reference images (`-i`, `--first-frame`, `--last-frame`) can be any common
-  format — the cli detects the real mime via `file` and auto-converts
-  non-jpeg/png inputs (e.g. heic, webp, tiff, bmp) to jpeg via `sips` before
-  upload.
+  format; non-JPEG/PNG inputs (e.g. HEIC, WebP, TIFF, BMP) are converted to
+  JPEG before upload.
 - Uploads are deduplicated by content hash, so passing the same reference
   repeatedly is cheap.
 - Unknown command? `vhscli` will suggest the closest match.
