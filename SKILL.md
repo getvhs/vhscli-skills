@@ -1,14 +1,14 @@
 ---
 name: vhscli
-description: Use the `vhscli` CLI to analyze images/video/pdfs with a prompt, or generate images/videos. Use when the user asks about local media, wants AI images/videos, or mentions vhscli, vhs, seedream, seedance, nano-banana, or gpt-image.
+description: Use the `vhscli` CLI to analyze images/video/pdfs with a prompt, or generate images/videos/audio. Use when the user asks about local media, wants AI images/videos/audio, or mentions vhscli, vhs, seedream, seedance, seed-audio, nano-banana, or gpt-image.
 ---
 
 # vhscli
 
 `vhscli` is a command-line tool for multimodal AI: chat about
-text/images/video/pdfs, or generate images and videos from prompts. It's a thin
-client — auth, uploads, and model execution all happen server-side, so users
-don't store any provider API keys locally.
+text/images/video/pdfs, or generate images, videos, and audio from prompts.
+It's a thin client — auth, uploads, and model execution all happen
+server-side, so users don't store any provider API keys locally.
 
 Run `vhscli --help` or `vhscli <command> --help` to see current help — the CLI
 is the source of truth.
@@ -26,7 +26,7 @@ npx @getvhs/vhscli@latest <command> ...
 Throughout this doc, commands are written as `vhscli ...` for readability —
 substitute `npx @getvhs/vhscli@latest ...` when running.
 
-Requires Node.js ≥ 22.
+Requires Node.js ≥ 24.
 
 ## Top-level
 
@@ -44,13 +44,21 @@ Commands:
 - `logout` — log out and delete local access tokens
 - `whoami` — print the logged-in user's email
 - `models` — list available models
-- `generate <model> <prompt> [-o <path>]` — generate an image or video, wait,
-  and save it
-- `submit <model> <prompt> [-o <path>]` — submit the same task as `generate`
-  but exit immediately (writes a `<output>.vhs_task` sidecar to resume later)
-- `chat <prompt>` — chat with seed-2.0 (text, image, video, or pdf input)
-- `resume <files...>` — finish one or more aborted generations from their
-  `.vhs_task` sidecar files
+- `generate <model> <prompt> -o <path>` — generate an image, video, or
+  audio, wait, and save it (`-o` is required)
+- `submit <model> <prompt> -o <path>` — submit the same task as `generate` but
+  exit immediately, printing the task id; finish later with `resume <task_id>`
+- `chat <prompt>` — chat with seed-2.0 / `a2:seed-2-pro` (text, image,
+  video, or pdf input)
+- `resume <task_id> -o <path>` — finish a submitted generation by its task id
+
+The CLI stores nothing locally: a task lives in the VHS backend and the task
+id is the only handle to it. There is no project, no database, no config —
+see "How a task is tracked" below.
+
+Every `generate`/`submit`/`resume` accepts `--json`: NDJSON events on stdout
+(`submitted`/`progress`/`done`/`error`) with ordinary logs rerouted to
+stderr — the machine-readable way to script generations (see "--json" below).
 
 ## Auth
 
@@ -60,11 +68,12 @@ preemptively — it requires interactive browser login.
 
 ## Models
 
-- **Chat / understand** (text / image / video / pdf): `seed-2.0` — under
-  `vhscli chat`
-- **Generate images**: `seedream-5` (default), `seedream-4-5`, `nano-banana-2`,
-  `nano-banana-pro`, `gpt-image-2` — under `vhscli generate`
+- **Chat / understand** (text / image / video / pdf): `seed-2.0`
+  (`a2:seed-2-pro` under `vhscli chat`)
+- **Generate images**: `seedream-5` (default), `seedream-5-pro`,
+  `nano-banana-2`, `nano-banana-pro`, `gpt-image-2` — under `vhscli generate`
 - **Generate video**: `seedance-2` — under `vhscli generate`
+- **Generate audio**: `seed-audio-1` — under `vhscli generate`
 
 ## Prompt guides
 
@@ -78,7 +87,7 @@ skip this.
 | Model(s)                           | Guide file (Read before prompting) |
 | ---------------------------------- | ---------------------------------- |
 | `seed-2.0` (used by `vhscli chat`) | `prompt_guide/seed-2.txt`          |
-| `seedream-5`, `seedream-4-5`       | `prompt_guide/seedream.txt`        |
+| `seedream-5`, `seedream-5-pro`     | `prompt_guide/seedream.txt`        |
 | `nano-banana-2`, `nano-banana-pro` | `prompt_guide/nano-banana.txt`     |
 | `seedance-2`                       | `prompt_guide/seedance-2.txt`      |
 | `gpt-image-2`                      | `prompt_guide/gpt-image-2.txt`     |
@@ -93,7 +102,7 @@ Every command that takes a prompt also accepts `-` as the prompt, meaning
 "read from stdin":
 
 ```
-cat my_prompt.txt | vhscli generate nano-banana-pro -
+cat my_prompt.txt | vhscli generate nano-banana-pro - -o out.png
 echo "what is this?" | vhscli chat - -i photo.jpg
 ```
 
@@ -138,12 +147,12 @@ vhscli chat "list key events with start_time and end_time in HH:mm:ss as json." 
 ## vhscli generate seedream-5 — generate an image (default choice)
 
 ```
-vhscli generate seedream-5 <prompt> [-o <path>] [-i <image>...] [--size <size>]
+vhscli generate seedream-5 <prompt> -o <path> [-i <image>...] [--size <size>]
 ```
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `vhscli-seedream-5-<timestamp>.jpg`)
+- `-o`, `--output <path>` — output file path, required (e.g. `out.jpg`)
 - `-i <path>` — reference image, max 14 (repeat `-i` for more)
 - `--size <size>` — `2K`, `3K`, or `WxH` like `1024x1536` (default: 2K)
   - WxH pixel count must be in [3,686,400, 10,404,496]
@@ -161,49 +170,61 @@ vhscli generate seedream-5 "swap the outfit" -o out.png -i person.jpg -i outfit.
 
 ---
 
-## vhscli generate seedream-4-5 — generate an image (larger size range)
+## vhscli generate seedream-5-pro — generate an image (Seedream 5.0, pro tier)
 
 ```
-vhscli generate seedream-4-5 <prompt> [-o <path>] [-i <image>...] [--size <size>]
+vhscli generate seedream-5-pro <prompt> -o <path> [-i <image>...] [--size <size>]
 ```
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `vhscli-seedream-4-5-<timestamp>.jpg`)
+- `-o`, `--output <path>` — output file path, required (e.g. `out.png`)
 - `-i <path>` — reference image, max 14 (repeat `-i` for more)
-- `--size <size>` — `2K`, `4K`, or `WxH` (default: 2K)
-  - WxH pixel count must be in [3,686,400, 16,777,216]
+- `--size <size>` — `2K`, `3K`, or `WxH` like `1024x1536` (default: 2K)
+  - WxH pixel count must be in [3,686,400, 10,404,496]
   - WxH aspect ratio must be in [1:16, 16:1]
 
-Example:
+Same prompt guide and same flags as `seedream-5`, but the pro tier: stronger
+prompt adherence and finer detail, at roughly **2 minutes per image** instead
+of seconds. Prefer plain `seedream-5` by default; reach for `seedream-5-pro`
+when the user asks for the best quality, or when `seedream-5` keeps missing
+details in a complex prompt. The provider renders png, so prefer a `.png` `-o`
+(other extensions still work — the CLI converts).
+
+Examples:
 
 ```
-vhscli generate seedream-4-5 "a mountain at sunrise" -o mountain.jpg --size 4K
+vhscli generate seedream-5-pro "a lone lighthouse on a cliff at dusk, long exposure, crashing surf" -o lighthouse.png
+vhscli generate seedream-5-pro "add a flock of birds across the sky, keep the style" -i scene.png -o birds.png
 ```
+
+Because it is slow, it pairs well with `vhscli submit` (below) when generating
+several images: submit them all, then resume.
 
 ---
 
 ## vhscli generate nano-banana-2 — generate an image (Google)
 
 ```
-vhscli generate nano-banana-2 <prompt> [-o <path>] [-i <image>...] [--size <size>]
+vhscli generate nano-banana-2 <prompt> -o <path> [-i <image>...] [--size <size>]
 ```
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `vhscli-nano-banana-2-<timestamp>.png`)
+- `-o`, `--output <path>` — output file path, required (e.g. `out.png`)
 - `-i <path>` — reference image, max 14 (repeat `-i` for more)
-- `--size <size>` — `512`, `1K`, `2K`, or `4K` (default: 1K)
+- `--size <size>` — `1k`, `2k`, or `4k` (default: 1k), lowercase
 
-Output is always square (1:1). Describe the framing you want in the prompt if
-you need a tall or wide composition.
+`--size` picks a resolution tier, not exact dimensions — nano-banana takes no
+`WxH`. The model chooses the aspect ratio, so describe the framing you want in
+the prompt if you need a tall or wide composition.
 
 Examples:
 
 ```
-vhscli generate nano-banana-2 "remove the man from the photo, keep everything else" -i photo.jpg
-vhscli generate nano-banana-2 "90s skateboarder poster, vertical composition" -o poster.png --size 2K
-vhscli generate nano-banana-2 "a glossy candle in a bell jar on a marble counter, soft light"
+vhscli generate nano-banana-2 "remove the man from the photo, keep everything else" -i photo.jpg -o clean.png
+vhscli generate nano-banana-2 "90s skateboarder poster, vertical composition" -o poster.png --size 2k
+vhscli generate nano-banana-2 "a glossy candle in a bell jar on a marble counter, soft light" -o candle.png
 ```
 
 ---
@@ -211,23 +232,23 @@ vhscli generate nano-banana-2 "a glossy candle in a bell jar on a marble counter
 ## vhscli generate nano-banana-pro — generate an image (Google, premium)
 
 ```
-vhscli generate nano-banana-pro <prompt> [-o <path>] [-i <image>...] [--size <size>]
+vhscli generate nano-banana-pro <prompt> -o <path> [-i <image>...] [--size <size>]
 ```
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `vhscli-nano-banana-pro-<timestamp>.png`)
+- `-o`, `--output <path>` — output file path, required (e.g. `out.png`)
 - `-i <path>` — reference image, max 14 (repeat `-i` for more)
-- `--size <size>` — `1K`, `2K`, or `4K` (default: 1K)
+- `--size <size>` — `1k`, `2k`, or `4k` (default: 1k), lowercase
 
-Output is always square (1:1). Higher-quality sibling of nano-banana-2 — better
-text rendering and richer textures.
+Same resolution-tier sizing and model-chosen aspect ratio as nano-banana-2.
+Higher-quality sibling — better text rendering and richer textures.
 
 Examples:
 
 ```
-vhscli generate nano-banana-pro "studio portrait, cinematic lighting, three-quarter framing" -o portrait.jpg --size 2K
-vhscli generate nano-banana-pro "a sun-drenched minimalist living room with a 3d armchair from this sketch" -i sketch.jpg
+vhscli generate nano-banana-pro "studio portrait, cinematic lighting, three-quarter framing" -o portrait.jpg --size 2k
+vhscli generate nano-banana-pro "a sun-drenched minimalist living room with a 3d armchair from this sketch" -i sketch.jpg -o room.png
 ```
 
 ---
@@ -235,12 +256,12 @@ vhscli generate nano-banana-pro "a sun-drenched minimalist living room with a 3d
 ## vhscli generate gpt-image-2 — generate or edit an image (OpenAI)
 
 ```
-vhscli generate gpt-image-2 <prompt> [-o <path>] [-i <image>...] [--size <size>]
+vhscli generate gpt-image-2 <prompt> -o <path> [-i <image>...] [--size <size>]
 ```
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `vhscli-gpt-image-2-<timestamp>.png`)
+- `-o`, `--output <path>` — output file path, required (e.g. `out.png`)
 - `-i <path>` — reference image for edits (repeat `-i` for more)
 - `--size <size>` — preset (`1024x1024`, `1536x1024`, `1024x1536`,
   `2048x2048`, `2048x1152`, `3840x2160`) or `WxH` (default: 1024x1024)
@@ -254,8 +275,8 @@ CLI converts if needed. Use png or webp when you need transparency.
 Examples:
 
 ```
-vhscli generate gpt-image-2 "a children's book drawing of a veterinarian examining a cat"
-vhscli generate gpt-image-2 "replace the background with a starry night, keep the subject unchanged" -i photo.jpg
+vhscli generate gpt-image-2 "a children's book drawing of a veterinarian examining a cat" -o vet.png
+vhscli generate gpt-image-2 "replace the background with a starry night, keep the subject unchanged" -i photo.jpg -o night.png
 vhscli generate gpt-image-2 "ultra-wide landscape of the swiss alps at golden hour" --size 3840x2160 -o alps.jpg
 ```
 
@@ -264,7 +285,7 @@ vhscli generate gpt-image-2 "ultra-wide landscape of the swiss alps at golden ho
 ## vhscli generate seedance-2 — generate a video
 
 ```
-vhscli generate seedance-2 <prompt> [-o <path>]
+vhscli generate seedance-2 <prompt> -o <path>
                            [--first-frame <image>] [--last-frame <image>]
                            [-i <image>...] [-v <video>...] [-a <audio>...]
                            [--ratio <r>] [--resolution <res>] [--duration <n>]
@@ -279,13 +300,16 @@ Mode is picked from your flags:
 
 Options:
 
-- `-o`, `--output <path>` — output file path (default: `vhscli-seedance-2-<timestamp>.mp4`)
+- `-o`, `--output <path>` — output file path, required (`.mp4`, `.webm`, or
+  `.mov`; prefer `.mp4`)
 - `--first-frame <image>` — use as the first frame
 - `--last-frame <image>` — use as the last frame (requires `--first-frame`)
 - `-i <path>` — reference image, max 9 (repeat `-i`). conflicts with
   `--first-frame`
-- `-v <path>` — reference video, max 3 (repeat `-v`)
-- `-a <path>` — reference audio, max 3 (repeat `-a`). requires `-i` or `-v`
+- `-v <path>` — reference video, max 3 (repeat `-v`). conflicts with
+  `--first-frame`
+- `-a <path>` — reference audio, max 3 (repeat `-a`). requires `-i` or `-v`,
+  conflicts with `--first-frame`
 - `--ratio <r>` — aspect ratio (default: 16:9). one of: `16:9`, `4:3`,
   `1:1`, `3:4`, `9:16`, `21:9`
 - `--resolution <res>` — `480p`, `720p`, or `1080p` (default: 720p)
@@ -296,9 +320,8 @@ Options:
 Defaults to 5s @ 720p, 16:9, with audio. Jobs run in the cloud and can take
 minutes — the CLI polls automatically. If you don't want to block, use
 `vhscli submit seedance-2 ...` (same flags) to detach immediately, then
-`vhscli resume <output>.vhs_task` later. If a `vhscli generate` is interrupted
-mid-poll, the sidecar it wrote at start (`<output>.vhs_task`) is what you pass
-to `resume`.
+`vhscli resume <task_id> -o cat.mp4` later (submit prints the id). A
+`vhscli generate` interrupted mid-poll is finished the same way.
 
 Examples:
 
@@ -318,44 +341,67 @@ vhscli generate seedance-2 "lip sync the words" -o out.mp4 -i face.jpg -a voice.
 
 ---
 
-## The `.vhs_task` sidecar — what `generate`, `submit`, and `resume` share
-
-As soon as `vhscli generate` or `vhscli submit` has a task id from the
-backend, it writes a tiny sidecar next to the intended output:
+## vhscli generate seed-audio-1 — generate speech audio
 
 ```
-<output>.vhs_task        # JSON: {"id": "<uuid>"}
-# e.g. clip.mp4.vhs_task, fox.jpg.vhs_task
+vhscli generate seed-audio-1 <prompt> -o <path> [-i <audio>...]
 ```
 
-- `generate` keeps polling and, on success, saves the media to `<output>` and
-  removes the sidecar. On a task error it also removes the sidecar and exits
-  non-zero.
-- `submit` writes the sidecar and exits immediately, leaving the backend task
-  running.
-- `resume <files...>` re-attaches to one or more sidecars: waits if the task
-  is still running, saves the media to the path implied by the sidecar
-  filename (`clip.mp4.vhs_task` → `clip.mp4`), and removes the sidecar.
+Options:
 
-`vhscli chat` does not use this sidecar — chat is fast and prints to stdout.
+- `-o`, `--output <path>` — output file path, required (must be `.mp3`)
+- `-i <path>` — reference voice clip for cloning or blending, max 3
+  (repeat `-i` for more). each clip should be ≤30s and ≤10MB
 
-If `-o` was not passed, the sidecar is named after the auto-generated default
-output (`vhscli-<model>-<timestamp>.<ext>.vhs_task` in the current folder).
-**For long jobs (`seedance-2` especially), pass `-o` so the sidecar has a
-predictable name you can resume.**
+Output is always mp3.
+
+Examples:
+
+```
+vhscli generate seed-audio-1 "Welcome to VHS." -o welcome.mp3
+vhscli generate seed-audio-1 "Read this in the reference voice." -i voice.mp3 -o out.mp3
+vhscli generate seed-audio-1 "Blend these voices." -i v1.mp3 -i v2.mp3 -o blend.mp3
+```
+
+---
+
+## How a task is tracked — what `generate`, `submit`, and `resume` share
+
+A generation is a row in the VHS backend. The CLI writes no database and no
+sidecar files, so **the task id is the only handle to a task** — lose it and
+you have stranded something you paid for.
+
+- `generate` submits, waits, and saves to `-o`. It prints the id first, so an
+  interrupted run is resumable.
+- `submit` prints the id (`task_id: <uuid>`) and exits without waiting. `-o`
+  is validated but nothing is written yet.
+- `resume <task_id> -o <path>` waits for the task and writes its output.
+
+`-o` is required on all three, including `resume`: the task knows which model
+ran and what was asked, but only you know where the file belongs. The CLI
+writes exactly to `-o` — it does not re-home or de-conflict, so check the path
+first if you must not overwrite.
+
+Everything is keyed by the task id and idempotent, so re-running a command
+that died mid-flight joins the existing task rather than paying twice. Use
+`--task-id <uuid>` to choose the id yourself when you need it recorded before
+the submit returns.
+
+`vhscli chat` has no task to track — it is fast and prints to stdout.
 
 ---
 
 ## vhscli submit — submit a task and exit (don't wait)
 
 ```
-vhscli submit <model> <prompt> [-o <path>] [...same flags as `vhscli generate <model>`]
+vhscli submit <model> <prompt> -o <path> [...same flags as `vhscli generate <model>`]
 ```
 
 `submit` takes the **same models and the same options** as `generate`
-(`seedance-2`, `seedream-5`, `seedream-4-5`, `nano-banana-2`,
-`nano-banana-pro`, `gpt-image-2`). The only difference is that after creating
-the task and writing `<output>.vhs_task`, it exits without polling.
+(`seedance-2`, `seedream-5`, `seedream-5-pro`, `nano-banana-2`,
+`nano-banana-pro`, `gpt-image-2`, `seed-audio-1`). The only difference is that
+once the backend has the task it prints `task_id: <uuid>` and exits without
+polling. `-o` is checked but nothing is written until you resume.
 
 Use it when:
 
@@ -363,57 +409,64 @@ Use it when:
   terminal blocked.
 - You want to fan out several tasks in parallel and pull results later.
 
-Pair it with `vhscli resume <output>.vhs_task` to fetch the result.
+**Capture the printed id** and pass it to `vhscli resume <task_id> -o <path>`
+to fetch the result. Nothing on this machine remembers the task for you.
+
+`--task-id <uuid>` submits under an id you choose instead of a fresh one, so
+you can write the id down *before* the submit returns. Use it when losing the
+id would strand a paid-for task: mint a uuid, persist it, then submit. If the
+command dies before it prints anything, re-run the identical command — the
+backend row and the submit are both keyed by that id and idempotent, so the
+re-run joins the same task rather than starting a second
+one.
 
 Examples:
 
 ```
 # kick off a video, get the terminal back, finish later
 vhscli submit seedance-2 "a robot dancing in tokyo at night" -o robot.mp4
+# prints: task_id: 7d3c1b2a-...
 # ... do other work ...
-vhscli resume robot.mp4.vhs_task
+vhscli resume 7d3c1b2a-...
 
 # fan out several image jobs, then collect them all
-vhscli submit seedream-5 "a red fox in a snowy forest" -o fox.jpg
-vhscli submit seedream-5 "a blue jay on a branch"      -o jay.jpg
-vhscli submit seedream-5 "an orca breaching"           -o orca.jpg
-vhscli resume fox.jpg.vhs_task jay.jpg.vhs_task orca.jpg.vhs_task
+vhscli submit seedream-5 "a red fox in a snowy forest" -o fox.jpg   # task_id: <id1>
+vhscli submit seedream-5 "a blue jay on a branch"      -o jay.jpg   # task_id: <id2>
+vhscli submit seedream-5 "an orca breaching"           -o orca.jpg  # task_id: <id3>
+vhscli resume <id1> <id2> <id3>
 ```
 
 ---
 
-## vhscli resume — finish aborted generations from sidecar files
+## vhscli resume — finish a submitted generation by task id
 
 ```
-vhscli resume <files...>
+vhscli resume <task_id> -o <path>
 ```
 
-Takes one or more `.vhs_task` sidecar files (any mix of models). For each
-sidecar, `resume`:
+Takes the id `submit` printed and the path to write. `resume`:
 
-- Reads the task id from the sidecar.
-- Derives the output path by stripping the trailing `.vhs_task`
-  (`clip.mp4.vhs_task` → `clip.mp4`). The extension on that path sets the
-  saved format; the CLI converts if needed.
-- Waits for the task to finish, saves the media, and removes the sidecar on
-  success (or on a non-recoverable task error).
-- Processes files sequentially; exits non-zero on the first failure (later
-  sidecars stay on disk and can be resumed again).
+- Looks the task up on the server (fatal if the id is unknown there).
+- Recovers which model ran from the task itself, and checks `-o` matches that
+  model's output kind before waiting.
+- Waits for the task to finish if it is still running.
+- Saves the media to `-o`. The extension sets the saved format; the CLI
+  converts if needed. It writes exactly there — no re-homing, no ` (N)`.
+
+Safe to re-run: a finished task is re-read from the server, never resubmitted.
+To fan out, run one `resume` per id (in parallel shells if you like) — each is
+one task and one file.
 
 When to use `resume`:
 
 - You ran `vhscli submit ...` and now want the result.
 - Your `vhscli generate ...` was interrupted (ctrl-c, crash, closed terminal,
-  lost network) — the sidecar it wrote at the start is still on disk.
-
-You cannot resume by raw task id any more; if you only have an id, recreate
-the sidecar manually: `echo '{"id":"<uuid>"}' > out.mp4.vhs_task`.
+  lost network) — it printed the id before it started waiting.
 
 Examples:
 
 ```
-vhscli resume clip.mp4.vhs_task
-vhscli resume a.jpg.vhs_task b.jpg.vhs_task c.jpg.vhs_task
+vhscli resume 7d3c1b2a-... -o fox.png
 ```
 
 ---
@@ -499,11 +552,10 @@ may miss brief events.
 ## Tips
 
 - Always quote prompts.
-- `-o` is optional for `vhscli generate` / `vhscli submit` — defaults to
-  `vhscli-<model>-<timestamp>.<ext>` in the current folder. Output format
-  follows the `-o` extension; the CLI converts if needed. For `submit`, pass
-  `-o` so the resulting `<output>.vhs_task` sidecar has a name you can find
-  later.
+- `-o` is required for `vhscli generate` / `vhscli submit` / `vhscli resume`.
+  It's relative to your cwd; output format follows the extension and the CLI
+  converts if needed. The CLI writes exactly there and will overwrite, so pick
+  a free name yourself if that matters.
 - Short options accept no-space form: `-ofoo.jpg`. Long options accept `=`:
   `--size=2K`.
 - Use `--` to pass a prompt starting with a dash:
@@ -511,6 +563,28 @@ may miss brief events.
 - Reference images (`-i`, `--first-frame`, `--last-frame`) can be any common
   format; non-JPEG/PNG inputs (e.g. HEIC, WebP, TIFF, BMP) are converted to
   JPEG before upload.
-- Uploads are deduplicated by content hash, so passing the same reference
-  repeatedly is cheap.
+- Reference files are uploaded to temporary cloud storage for the provider to
+  fetch, and expire there on their own. Each run re-uploads them, so passing a
+  large reference repeatedly costs an upload each time.
 - Unknown command? `vhscli` will suggest the closest match.
+
+
+## --json (scripting)
+
+Add `--json` to `generate`, `submit`, or `resume` to get one JSON object per
+line on stdout while logs go to stderr:
+
+```
+{"event":"submitted","task_id":"..."}
+{"event":"progress","task_id":"...","elapsed_s":42}
+{"event":"done","task_id":"...","path":"/abs/out.mp4","hash":"sha256:...","size":123}
+{"event":"error","message":"..."}
+```
+
+- `submitted` fires as soon as the backend accepts the job — persist the
+  task_id and you can `vhscli resume <task_id> -o <path> --json` later, even
+  after a crash, from any machine you are logged in on. The id is the whole
+  handle; nothing local is needed.
+- `done.path` is the file written (always the `-o` you asked for); `hash` is
+  sha256 of its content.
+- a failing command emits `error` and exits 1.
